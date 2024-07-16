@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>HomeSpotifyForm</class>
+ <widget class="QMainWindow" name="HomeSpotifyForm">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1500</width>
+    <height>1000</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">#FormWelcome {
+	background:url(D:/BiBongBenh/Desktop/CNPM/img/spotify-home.png);
+}</string>
+  </property>
+  <widget class="QWidget" name="FormWelcome">
+   <property name="styleSheet">
+    <string notr="true">#FormWelcome {
+	back-ground:url(D:/BiBongBenh/Desktop/CNPM/img/login.png);
+}</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
