@@ -2,28 +2,19 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPu
 from PyQt6 import uic
 import sys
 
-class LoginView(QMainWindow):
-    def __init__(self) :
-        super().__init__()
-        uic.loadUi("./ui/welcome.ui", self)
 
-class LoginView(QMainWindow):
-    def __init__(self) :
-        super().__init__()
-        uic.loadUi("./ui/welcome.ui", self)
+class SpotifyApp(QtWidgets.QMainWindow):
+    def __init__(self):
+        super(SpotifyApp, self).__init__()
+        uic.loadUi('yourfile.ui', self)
+
+        # Kết nối đến Spotify API
         
-import pygame 
-pygame. init()
-my_sound = pygame. mixer. Sound('D:/BiBongBenh/Downloads/Nhạc nền vui của Độ mixi.mp3')
 
-
-
-if __name__ == "__main__":
-    # my_sound.play()
-    app = QApplication(sys.argv)
-    login = LoginView()
-    login.show()
-    app.exec()
+app = QtWidgets.QApplication(sys.argv)
+window = SpotifyApp()
+window.show()
+sys.exit(app.exec_())
 
 
 
