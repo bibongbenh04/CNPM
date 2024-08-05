@@ -76,12 +76,15 @@
         <br>
         <br>
         <header class="header-container">
-            <div class="search-bar" style="width: 390px;">
-                <input type="search" placeholder="What do you want to listen to?" aria-label="Search">
-                <button type="submit" aria-label="Search">
+            <form action="search" method="POST">
+                {% csrf_token %}
+                <div class="search-bar" style="width: 390px;">
+                  <input type="search" name="search_query" placeholder="What do you want to listen to?" aria-label="Search" >
+                  <button type="submit" aria-label="Search">
                     🔍
-                </button>
-            </div>
+                  </button>
+                </div>
+              </form>
         </header>
 
         <!-- Popular Tracks Section -->
@@ -99,7 +102,7 @@
                             <img src="{{t.track_coverArt}}" alt="Song Image" class="w-12 h-12">
                             <div>
                                 <p class="text-base font-medium">{{t.track_name}}</p>
-                                <p class="text-xs text-gray-400">Rema, Selena Gomez</p>
+                                <p class="text-xs text-gray-400">{{t.track_artist}}</p>
                             </div>
                         </div>
                         <div class="text-gray-400">Chưa làm view</div>

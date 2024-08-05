@@ -43,39 +43,46 @@ def getAudioByURI(uri):
 	}
 	
 def search(request):
-	query = request.GET.get('query', '')
-	url = "https://spotify23.p.rapidapi.com/search/"
+	if request.method == 'POST':
+		query = request.POST['search_query']
 
-	querystring = {"q":query,"type":"tracks","offset":"0","limit":"10","numberOfTopResults":"5"}
+		url = "https://spotify23.p.rapidapi.com/search/"
 
-	headers = {
-		"x-rapidapi-key": "097f271c26msh6c375594a059fe7p12cc04jsn241c6c1858fa",
-		"x-rapidapi-host": "spotify23.p.rapidapi.com"
-	}
+		querystring = {"q":query,"type":"tracks","offset":"0","limit":"10","numberOfTopResults":"5"}
 
-	response = requests.get(url, headers=headers, params=querystring)
+		headers = {
+			"x-rapidapi-key": "097f271c26msh6c375594a059fe7p12cc04jsn241c6c1858fa",
+			"x-rapidapi-host": "spotify23.p.rapidapi.com"
+		}
 
-	tracks = response.json()["tracks"]["items"]
-	data = []
-	for track in tracks:
-		track_name = track["data"]["name"]
-		track_coverArt = track["data"]["albumOfTrack"]["coverArt"]["sources"][0]["url"]
-		track_duration = track["data"]["duration"]["totalMilliseconds"]
-		track_uri = track["data"]["uri"]
-		data.append({
-			'track_name': track_name,
-			'track_coverArt': track_coverArt,
-			'track_duration': float(track_duration)//60000,
-			'track_uri': track_uri[14:]
-		})
-	print(data)
-	context = {  # Giả sử kết quả tìm kiếm của bạn
-		'data': data,
-        'query': query,
-		'response':response.json(),
-		'totalCount': response.json()["tracks"]["totalCount"]
-    }
-	return render(request, 'search.html', context)
+		response = requests.get(url, headers=headers, params=querystring)
+
+		tracks = response.json()["tracks"]["items"]
+		data = []
+		for track in tracks:
+			track_name = track["data"]["name"]
+			track_coverArt = track["data"]["albumOfTrack"]["coverArt"]["sources"][0]["url"]
+			track_duration = track["data"]["duration"]["totalMilliseconds"]
+			track_uri = track["data"]["uri"]
+			track_artist = track["data"]["artists"]["items"][0]["profile"]["name"]
+			data.append({
+				'track_name': track_name,
+				'track_coverArt': track_coverArt,
+				'track_duration': float(track_duration)//60000,
+				'track_uri': track_uri[14:],
+				'track_artist': track_artist
+			})
+		print(data)
+		context = {  # Giả sử kết quả tìm kiếm của bạn
+			'data': data,
+			'query': query,
+			'response':response.json(),
+			'totalCount': response.json()["tracks"]["totalCount"]
+		}
+
+		return render(request, 'search.html', context)
+	else:
+		return render(request, 'search.html')
 
 # Create your views here.
 def index(request):

@@ -67,12 +67,16 @@
 
   <div style="margin-left:240px; padding:20px;">
     <header class="header-container">
-      <div class="search-bar" style="width: 390px;">
-        <input type="search" placeholder="What do you want to listen to?" aria-label="Search">
-        <button type="submit" aria-label="Search">
-          🔍
-        </button>
-      </div>
+      <form action="search" method="POST">
+        {% csrf_token %}
+        <div class="search-bar" style="width: 390px;">
+          <input type="search" name="search_query" placeholder="What do you want to listen to?" aria-label="Search" >
+          <button type="submit" aria-label="Search">
+            🔍
+          </button>
+        </div>
+      </form>
+      
       <div class="search-title">Top Artists</div>
     </header>
 
