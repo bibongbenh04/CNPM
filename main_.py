@@ -10,7 +10,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         # self.showFullScreen()
-        self.btnLogin.clicked.connect(self.showFormLogin)
+        self.btn = self.findChild(QPushButton, "btnLogin")
+        self.btn.clicked.connect(self.showFormLogin)
         self.btnSignUp.clicked.connect(self.showFormSignUp)
 
     def showFormLogin(self):
@@ -196,6 +197,6 @@ if __name__ == "__main__":
     login = LoginForm()
     signup = SignUpForm()
     home = HomeSpotifyDashBoard()
-    # window.show()
-    home.show()
+    window.show()
+    # home.show()
     app.exec()
