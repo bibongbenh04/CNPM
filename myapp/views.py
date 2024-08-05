@@ -16,8 +16,32 @@ import requests
 
 
 def music(request, url):
-	return render(request, 'music.html')
+	context = getAudioByURI(url)
+	return render(request, 'music.html', context)
 
+def getAudioByURI(uri):
+	url = "https://spotify23.p.rapidapi.com/tracks/"
+	querystring = {"ids":uri}
+
+	headers = {
+		"x-rapidapi-key": "097f271c26msh6c375594a059fe7p12cc04jsn241c6c1858fa",
+		"x-rapidapi-host": "spotify23.p.rapidapi.com"
+	}
+
+	response = requests.get(url, headers=headers, params=querystring)
+
+	track = response.json()["tracks"][0]
+	name_track = track["name"]
+	preview_url = track["preview_url"]
+	artist = track["artists"][0]["name"]
+	image = track["album"]["images"][0]["url"]
+	return {
+		'name_track':name_track,
+		'preview_url':preview_url,
+		'artists': artist,
+		'image': image,
+	}
+	
 def search(request):
 	query = request.GET.get('query', '')
 	url = "https://spotify23.p.rapidapi.com/search/"
@@ -42,7 +66,7 @@ def search(request):
 			'track_name': track_name,
 			'track_coverArt': track_coverArt,
 			'track_duration': float(track_duration)//60000,
-			'track_uri': track_uri
+			'track_uri': track_uri[14:]
 		})
 	print(data)
 	context = {  # Giả sử kết quả tìm kiếm của bạn

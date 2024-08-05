@@ -60,12 +60,10 @@
         style="margin-left:240px; padding:20px; display: flex; justify-content: center; align-items: center; height: calc(100vh - 90px);">
         <!-- Music Player Interface -->
         <div class="player-container">
-            <img class="album-cover"
-                src="https://geo-media.beatsource.com/image_size/500x500/5/9/7/5974a942-7721-44db-982d-88b641bb4c94.jpg"
-                alt="Album Cover">
+            <img class="album-cover" src="{{image}}" alt="Album Cover">
             <div class="song-info">
-                <h2 class="song-title">Song Name</h2>
-                <h3 class="artist-name">Artist Name</h3>
+                <h2 class="song-title">{{name_track}}</h2>
+                <h3 class="artist-name">{{artists}}</h3>
             </div>
             <div class="player-controls">
                 <button id="prev" class="control-btn">&#9668;</button>
@@ -79,6 +77,10 @@
                 <span id="current-time">0:00</span>
                 <span id="total-duration">4:00</span>
             </div>
+            <audio autoplay>
+                <source src="{{preview_url}}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
         </div>
 
         <audio id="audio-player" src="{% static 'audio-source-url' %}"></audio>
