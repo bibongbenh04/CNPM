@@ -145,7 +145,7 @@ def login(request):
 			django_messages.info(request, 'Thông tin đăng nhập chưa chính xác !')
 			return redirect('login')
 	else:
-		return render(request, 'themes/login.html')
+		return render(request, 'login.html')
 
 def logout(request):
 	auth.logout(request)
@@ -157,6 +157,10 @@ def signup(request):
 		email = request.POST['email']
 		password = request.POST['password']
 		password2 = request.POST['confirm_password']
+
+		if username == '' or email == '' or password == '' or password2 == '':
+			django_messages.info(request, 'Vui lòng điền đầy đủ thông tin')
+			return redirect('signup')
 
 		if password == password2:
 			if User.objects.filter(email=email).exists():
@@ -173,7 +177,7 @@ def signup(request):
 			django_messages.info(request, 'Mật Khẩu Không Trùng')
 			return redirect('signup')
 	else:
-		return render(request, 'themes/signup.html')
+		return render(request, 'signup.html')
 	
 def change_password(request):
     if request.method == 'POST':

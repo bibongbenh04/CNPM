@@ -3,7 +3,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Arial', sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 body {
@@ -13,6 +13,49 @@ body {
     height: 100vh;
 }
 
+.head-nav {
+    display: flex;
+    align-items: center;
+}
+
+.head-nav .login-button{
+    margin-left: 650px;
+}
+
+.head-nav .login-button button{
+    background: transparent;
+    border: 0px;
+    outline: 0px;
+}
+.head-nav .login-button button i{
+    color: #838181;
+    font-size: 22px;
+    margin-right: 10px;
+}
+
+.head-nav .login-button .signup{
+    color: #838181;
+    font-size: 16px;
+    font-weight: 600;
+    margin-right: 15px;
+}
+
+.head-nav .login-button .signup:hover{
+    color: #fff;
+}
+
+.head-nav .login-button .login{
+    color: #242323;
+    font-size: 16px;
+    font-weight: 600;
+    background: #fff;
+    padding: 6px 10px;
+    border-radius: 20px;
+}
+
+.head-nav .login-button .login:hover{
+    background: #f3f3f3;
+}
 /* Sidebar Styles */
 .sidebar {
     background-color: #000;
@@ -94,17 +137,49 @@ section {
 .sidebar {
     color: #b3b3b3;
     padding: 25px 10px;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .sidebar a {
     text-decoration: none;
-    color: inherit;
     display: block;
     padding: 5px 15px;
     margin: 10px 0;
     border-radius: 4px;
     transition: background-color 0.3s ease;
+    color: #b3b3b3;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.create-playlist {
+    background: #302f2f;
+    padding: 30px 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+.create-playlist h4
+{
+    color: #fff;
+    font-size: 15px;
+}
+
+.create-playlist p
+{
+    color: #fff;
+    font-size: 12px;
+    margin: 12px 0;
+}
+
+.create-playlist button
+{
+    padding: 8px 20px;
+    border: 0;
+    outline: 0;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
 }
 
 .sidebar a:hover,

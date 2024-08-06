@@ -15,33 +15,35 @@
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Spotify_logo_without_text.svg/1024px-Spotify_logo_without_text.svg.png"
                     alt="Spotify Logo" class="w-20 h-20">
             </a>
-            <h1 class="text-4xl text-white font-bold mt-2">UnSpotify</h1>
+            <h1 class="text-4xl text-white font-bold mt-2">SpotifyNahItJustifyxD</h1>
         </div>
-        <form class="bg-black">
+        <form class="bg-black" action="signup" method="POST">
+            {% csrf_token %}
             <div class="mb-4">
                 <input
                     class="bg-gray-800 text-white border border-gray-600 rounded py-2 px-4 block w-full appearance-none leading-normal"
-                    type="text" placeholder="Username">
+                    type="text" placeholder="Username" name="username">
             </div>
             <div class="mb-4">
                 <input
                     class="bg-gray-800 text-white border border-gray-600 rounded py-2 px-4 block w-full appearance-none leading-normal"
-                    type="email" placeholder="Email">
+                    type="email" placeholder="Email" name="email">
             </div>
             <div class="mb-6">
                 <input
                     class="bg-gray-800 text-white border border-gray-600 rounded py-2 px-4 block w-full appearance-none leading-normal"
-                    type="password" placeholder="Password">
+                    type="password" placeholder="Password" name="password">
             </div>
             <div class="mb-6">
                 <input
                     class="bg-gray-800 text-white border border-gray-600 rounded py-2 px-4 block w-full appearance-none leading-normal"
-                    type="password" placeholder="Repeat Password">
+                    type="password" placeholder="Repeat Password" name="confirm_password">
             </div>
-            <button
-                class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded w-full mb-4">Register</button>
+            <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded w-full mb-4">Register</button>
+            
+            
             <p class="text-center text-gray-400 text-xs">
-                Already have an account?<a href="/login" class="text-green-500"> Sign in</a>
+                Already have an account?<a href="login" class="text-green-500"> Sign in</a>
             </p>
         </form>
         <p class="text-center text-gray-500 text-xs mt-4">
