@@ -13,4 +13,5 @@ urlpatterns = [
 	path('changepass', views.change_password, name = 'changepass'),
     # path('product/<slug:url>', views.product),
     path('search', views.search, name = 'search'),
+    path('profile/<str:pk>', views.profile, name = 'profile'),
 ]+static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

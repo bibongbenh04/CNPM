@@ -17,16 +17,29 @@
             </a>
             <h1 class="text-4xl text-white font-bold mt-2">SpotifyNahItJustifyxD</h1>
         </div>
-        <form class="bg-black">
+
+        <div>
+            <style>
+                .text-red-500 {
+                    color: #f56565;
+                }
+            </style>
+            {% for message in messages %}
+            <p class="text-red-500 text-xs">{{ message }}</p>
+            {% endfor %}
+        </div>
+
+        <form class="bg-black" action="login" method="POST">
+            {% csrf_token %}
             <div class="mb-4">
                 <input
                     class="bg-gray-800 text-white border border-gray-600 rounded py-2 px-4 block w-full appearance-none leading-normal"
-                    type="text" placeholder="Username">
+                    type="text" placeholder="Username" name="username">
             </div>
             <div class="mb-6">
                 <input
                     class="bg-gray-800 text-white border border-gray-600 rounded py-2 px-4 block w-full appearance-none leading-normal"
-                    type="password" placeholder="Password">
+                    type="password" placeholder="Password" name="password">
             </div>
             <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded w-full mb-4">Sign
                 In</button>

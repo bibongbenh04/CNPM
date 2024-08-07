@@ -42,6 +42,35 @@ def getAudioByURI(uri):
 		'image': image,
 	}
 	
+def top_artists():
+	url = "https://spotify23.p.rapidapi.com/artists/"
+
+	querystring = {"ids":"5dfZ5uSmzR7VQK0udbAVpf,5HZtdKfC4xU0wvhEyYDWiY,6NF9Oa4ThQWCj6mogFSrVD,6d0dLenjy5CnR5ZMn2agiV,6zUWZmyi5MLOEynQ5wCI5f,5M3ffmRiOX9Q8Y4jNeR5wu"}
+
+	headers = {
+		"x-rapidapi-key": "097f271c26msh6c375594a059fe7p12cc04jsn241c6c1858fa",
+		"x-rapidapi-host": "spotify23.p.rapidapi.com"
+	}
+
+	response = requests.get(url, headers=headers, params=querystring)
+
+	artists = response.json()["artists"]
+	data = []
+	for artist in artists:
+		artist_name = artist["name"]
+		artist_coverArt = artist["images"][0]["url"]
+		artist_uri = artist["uri"]
+		artist_id = artist["id"]
+		data.append({
+			'artist_name': artist_name,
+			'artist_coverArt': artist_coverArt,
+			'artist_uri': artist_uri[15:],
+			'artist_id': artist_id
+		})
+
+	return data
+
+
 def search(request):
 	if request.method == 'POST':
 		query = request.POST['search_query']
@@ -86,17 +115,65 @@ def search(request):
 
 # Create your views here.
 def index(request):
-	heads = Header.objects.filter(is_active = True)
-	posts = Post.objects.all()[:5]
-	cats = Category.objects.filter(is_active = True)
-
+	artist_info = top_artists()
 	data = {
-		'heads': heads,
-		'posts' : posts,
-		'cats': cats
+		'artist_info': artist_info,
 	}
 	return render(request, 'index.html', data)
 
+def profile(request, pk):
+	artist_id = pk
+
+	url = "https://spotify23.p.rapidapi.com/artist_overview/"
+
+	querystring = {"id":artist_id}
+
+	headers = {
+		"x-rapidapi-key": "097f271c26msh6c375594a059fe7p12cc04jsn241c6c1858fa",
+		"x-rapidapi-host": "spotify23.p.rapidapi.com"
+	}
+
+	response = requests.get(url, headers=headers, params=querystring)
+
+	if response.status_code == 200:
+		data = response.json()
+
+		print(data)
+
+		artist_name = data["data"]["artist"]["profile"]["name"]
+		artist_monthlyListeners = data["data"]["artist"]["stats"]["monthlyListeners"]
+		artist_image = data["data"]["artist"]["visuals"]["headerImage"]["sources"][0]["url"]
+
+		top_tracks = []
+
+		for track in data["data"]["artist"]["discography"]["topTracks"]["items"]:
+			trackid = track["track"]["id"]
+			trackname = track["track"]["name"]
+			trackcoverArt = track["track"]["album"]["coverArt"]["sources"][0]["url"]	
+			trackuri = track["track"]["uri"]
+			trackplayCount = track["track"]["playcount"]
+			trackduration = track["track"]["duration"]["totalMilliseconds"]			
+
+			track_info = {
+				'trackid': trackid,
+				'trackname': trackname,
+				'trackcoverArt': trackcoverArt,
+				'trackuri': trackuri,
+				'trackplayCount': trackplayCount,
+				'trackduration': str(int(trackduration)//60000) + ":" + str(math.ceil((float(trackduration)%60000)/1000)),
+			}	
+
+			top_tracks.append(track_info)
+
+		artist_info = {
+			'artist_name': artist_name,
+			'artist_monthlyListeners': artist_monthlyListeners,
+			'artist_image': artist_image,
+			'top_tracks': top_tracks
+		}
+	else:
+		artist_info = None
+	return render(request, 'profile.html', artist_info)
 
 def load_more_sciences(request):
     offset = int(request.GET.get('offset', 0))
@@ -136,6 +213,10 @@ def login(request):
 
 		user = auth.authenticate(username=username, password=password)
 
+		if username == '' or password == '':
+			django_messages.info(request, 'Vui lòng điền đầy đủ thông tin !')
+			return redirect('login')
+
 		if user is not None:
 			auth.login(request, user)
 			return redirect('/')
@@ -159,22 +240,26 @@ def signup(request):
 		password2 = request.POST['confirm_password']
 
 		if username == '' or email == '' or password == '' or password2 == '':
-			django_messages.info(request, 'Vui lòng điền đầy đủ thông tin')
+			django_messages.info(request, 'Vui lòng điền đầy đủ thông tin !')
 			return redirect('signup')
 
 		if password == password2:
 			if User.objects.filter(email=email).exists():
-				django_messages.info(request, 'Email Đã Được Sử Dụng')
+				django_messages.info(request, 'Email đã tồn tại !')
 				return redirect('signup')
 			elif User.objects.filter(username=username).exists():
-				django_messages.info(request, 'Username Đã Được Sử Dụng')
+				django_messages.info(request, 'Tên đăng nhập đã tồn tại !')
 				return redirect('signup')
 			else:
 				user = User.objects.create_user(username=username, email=email, password=password)
 				user.save()
-				return redirect('login')
+
+				user_login = auth.authenticate(username=username, password=password)
+				auth.login(request, user_login)
+				return redirect('/')
 		else:
-			django_messages.info(request, 'Mật Khẩu Không Trùng')
+			print('Mật khẩu không khớp !')
+			django_messages.info(request, 'Mật khẩu không khớp !')
 			return redirect('signup')
 	else:
 		return render(request, 'signup.html')

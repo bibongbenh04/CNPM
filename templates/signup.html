@@ -17,6 +17,18 @@
             </a>
             <h1 class="text-4xl text-white font-bold mt-2">SpotifyNahItJustifyxD</h1>
         </div>
+
+        <div>
+            <style>
+                .text-red-500 {
+                    color: #f56565;
+                }
+            </style>
+            {% for message in messages %}
+            <p class="text-red-500 text-xs">{{ message }}</p>
+            {% endfor %}
+        </div>
+
         <form class="bg-black" action="signup" method="POST">
             {% csrf_token %}
             <div class="mb-4">

@@ -63,7 +63,9 @@ body {
     padding: 20px;
     display: flex;
     flex-direction: column;
+    z-index: 10;
 }
+
 
 /* Content Styles */
 .content {
