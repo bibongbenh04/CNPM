@@ -40,6 +40,7 @@ def getAudioByURI(uri):
 		'preview_url':preview_url,
 		'artists': artist,
 		'image': image,
+		'uri': uri
 	}
 	
 def top_artists():

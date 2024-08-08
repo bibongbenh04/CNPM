@@ -23,7 +23,7 @@
             <span class="sidebar-link-icon"><i class="fa-solid fa-house"></i></span>
             Home
           </a>
-          <a href="search" class="sidebar-link">
+          <a href="/search" class="sidebar-link">
             <span class="sidebar-link-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
             Search
           </a>
@@ -76,14 +76,82 @@
                 <span id="current-time">0:00</span>
                 <span id="total-duration">4:00</span>
             </div>
-            <audio autoplay>
-                <source src="{{preview_url}}" type="audio/mpeg">
+            <audio>
+                <!-- <source src="{{preview_url}}" type="audio/mpeg"> -->
                 Your browser does not support the audio element.
             </audio>
         </div>
 
-        <audio id="audio-player" src="{% static 'audio-source-url' %}"></audio>
+        <!--<audio id="audio-player" src="{% static 'audio-source-url' %}"></audio>-->
     </div>
 </body>
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script>
 
+
+        window.onSpotifyWebPlaybackSDKReady = () => {
+            const token = 'BQB-hjK_laWCNy_GLgNIPU5WHFvi1KuKFiwpu6HlfnxT5Uo6188KPCWYScBBtD8-_sHfhhUAiYas0hTPSA27XI85o098yxA8W6JRD2ji6a0KE5KpQwtym3wBMpGBtmNjDkYFFsf2FoPSZ5iYaYdeEd_C1kEBYRlNoLAqX9-TavGVuZTcwJ7M9wJWS1wAlDcsMr10ahC2Wbm8l3KNZIQvuCxhmtb4qbKp-PTxRQ';
+            const player = new Spotify.Player({
+                name: 'Web Playback SDK Quick Start Player',
+                getOAuthToken: cb => { cb(token); },
+                volume:1,
+                uri: 'spotify:track:{{uri}}'
+            });
+
+            // Ready
+            player.addListener('ready', ({ device_id }) => {
+                console.log('Ready with Device ID', device_id);
+            });
+
+            // Not Ready
+            player.addListener('not_ready', ({ device_id }) => {
+                console.log('Device ID has gone offline', device_id);
+            });
+
+            player.addListener('initialization_error', ({ message }) => {
+                console.error(message);
+            });
+
+            player.addListener('authentication_error', ({ message }) => {
+                console.error(message);
+            });
+
+            player.addListener('account_error', ({ message }) => {
+                console.error(message);
+            });
+
+            player.getCurrentState().then(state => {
+              if (!state) {
+                console.error('User is not playing music through the Web Playback SDK');
+                return;
+              }
+
+              var current_track = state.track_window.current_track;
+              var next_track = state.track_window.next_tracks[0];
+
+              console.log('Currently Playing', current_track);
+              console.log('Playing Next', next_track);
+            });
+
+            document.getElementById('play-pause').onclick = function() {
+              // Use the Spotify Web API to set the next track
+            fetch('https://api.spotify.com/v1/me/player/play', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    uris: ['spotify:track:31VNCmwspR7nVJ6kruUuJt']
+                })
+            })
+            .then(response => response.json())
+            .then(data => console.log('Track loaded and playing', data))
+            .catch(error => console.error('Error loading track', error));
+              player.nextTrack();
+            };
+
+            player.connect();
+        }
+    </script>
 </html>
