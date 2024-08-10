@@ -38,7 +38,7 @@ LOCALE_PATH = [
     BASE_DIR / 'locale/',
 ]
 
-ALLOWED_HOSTS = ['bibongbenh.pythonanywhere.com', '127.0.0.1']
+ALLOWED_HOSTS = ['aria0081.pythonanywhere.com', '127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
@@ -73,7 +73,7 @@ ROOT_URLCONF = 'myproject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR, 'templates'],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -136,7 +136,6 @@ USE_TZ = True
 
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_URL = 'static/' 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 #media URL add by me
 # MEDIA_URL = '/media/'
 # MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
