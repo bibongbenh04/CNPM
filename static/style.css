@@ -16,6 +16,7 @@ body {
 .head-nav {
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
 .head-nav .login-button{
@@ -490,7 +491,8 @@ section {
 }
 
 .album-cover {
-    max-width: 100%;
+    width: 50px;
+    height: 50px;
     border-radius: 10px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
     margin-bottom: 20px;
@@ -599,4 +601,31 @@ section {
 .song-item .song-duration {
     font-size: 18px;
     color: #b3b3b3;
+}
+
+.album-cover {
+    width: 200px;
+    height: auto;
+    margin-right: 25px;
+    border-radius: 5px;
+}
+.song-details {
+    display: flex;
+    flex-direction:column;
+    justify-content: center;
+}
+.song .song-title .artist-name {
+    margin: 0px;
+}
+.song{
+  margin: 0px;
+  font-size: 14px;
+}
+.song-title {
+    font-size: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin: 30px 0 30px 0;
+    
 }

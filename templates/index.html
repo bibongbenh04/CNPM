@@ -23,7 +23,7 @@
         <span class="sidebar-link-icon"><i class="fa-solid fa-house"></i></span>
         Home
       </a>
-      <a href="search" class="sidebar-link">
+      <a href="search/" class="sidebar-link">
         <span class="sidebar-link-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
         Search
       </a>
@@ -47,10 +47,6 @@
         <span class="sidebar-link-icon"><i class="fa-solid fa-heart"></i></span>
         Liked Songs
       </a>
-      <a href="#" class="sidebar-link">
-        <span class="sidebar-link-icon"><i class="fa-brands fa-itunes-note"></i></span>
-        US-UK Top Charts
-      </a>
     </div>
   </div>
 
@@ -58,7 +54,7 @@
   <div style="margin-left:240px; padding:20px;">
     <header class="header-container">
       <div class="head-nav">
-        <form action="search" method="POST">
+        <form action="{% url 'search' %}" method="POST">
           {% csrf_token %}
           <div class="search-bar" style="width: 390px;">
             <input type="search" name="search_query" placeholder="What do you want to listen to?" aria-label="Search" >
@@ -69,24 +65,14 @@
         </form>
 
         <div class="login-button">
-          {% if user.is_authenticated %}
-            <div class="user-nav" style="position: relative; right: -100px; display: inline-block;">
+            <div class="user-nav" style="position: relative; right: 80px; display: inline-block;">
               <b style="position: absolute; top: 27px; right: 60px; transform: translateY(-50%); white-space: nowrap;">Welcome, {{user.username}}</b>
-              <img src="https://i.pinimg.com/originals/4c/1e/91/4c1e91957d5167092927f5a44ffb0fea.jpg" alt="User" style="float: right; width: 50px; height: 50px; border-radius: 50%;" onclick="toggleLogoutBox()">
+              <img src="{{user.customuser.avatar.url}}" alt="User" style="float: right; width: 50px; height: 50px; border-radius: 50%;" onclick="toggleLogoutBox()">
               <div id="logout-box" style="display: none; position: absolute; top: 60px; right: 0; background-color: rgb(46, 45, 45); padding: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 10px; width: 150px;">
                 <a href="{% url 'logout' %}" style="text-decoration: none; color: white; font-size: 16px; font-weight: 300; white-space: nowrap; ">Log out</a>
               </div>
             </div>
-          {% else %}
-            <a href="signup">
-              <button type="button" class="signup">Sign Up</button>
-            </a>
-            <a href="login">
-              <button type="button" class="login">Login</button>
-            </a>
-          {% endif %}
         </div>
-        
       </div> 
     </header>
 
@@ -111,121 +97,48 @@
       <!-- Repeat sections for other categories with more content cards -->
 
       <!-- "Browse All" Section Title -->
-      <div class="browse-all-title">Browse all</div>
+      <div class="search-title">Top Songs</div>
 
       <!-- "Browse All" Section Content -->
 
 
       <div class="browse-all">
         <!-- Category Card -->
+        {% for track in first_top_tracks_section %}
         <div class="category-card">
-          <img src="https://i.scdn.co/image/ab6765630000ba8a81f07e1ead0317ee3c285bfa" alt="Podcasts">
-          <div class="category-title">Podcasts</div>
+          <a href="/music/{{track.track_id}}" style="text-decoration: none; color: #fff;">
+            <img src="{{track.track_coverArt}}" alt="{{track.track_name}}">
+            <div class="category-title">{{track.track_name}}</div>
+          </a>
         </div>
-
-        <div class="category-card">
-          <img src="https://i.scdn.co/image/ab67fb8200005cafa6152f62518b4c3251858b21" alt="Podcasts">
-          <div class="category-title">Audiobooks</div>
-        </div>
-
-        <div class="category-card">
-          <img src="https://concerts.spotifycdn.com/images/live-events_category-image.jpg" alt="Podcasts">
-          <div class="category-title">Live Events</div>
-        </div>
-
-        <div class="category-card">
-          <img src="https://t.scdn.co/images/ea364e99656e46a096ea1df50f581efe" alt="Podcasts">
-          <div class="category-title">Made For You</div>
-        </div>
-
-        <div class="category-card">
-          <img src="https://i.scdn.co/image/ab67706f000000027ea4d505212b9de1f72c5112" alt="Podcasts">
-          <div class="category-title">New Releases</div>
-        </div>
-
-        <div class="category-card">
-          <img src="https://i.scdn.co/image/ab67fb8200005caf585ad0e83caae5047865f7a4" alt="Podcasts">
-          <div class="category-title">2023 in Music</div>
-        </div>
-        <!-- Repeat for each category -->
-        <!-- ... other categories ... -->
+        {% endfor %}
       </div>
 
       <div class="browse-all">
         <!-- Category Card -->
+        {% for track in second_top_tracks_section %}
         <div class="category-card">
-          <img src="https://i.scdn.co/image/ab67fb8200008e2cea38d17f2e1a1630287f4328" alt="Podcasts">
-          <div class="category-title">2023 in podcasts</div>
+          <a href="/music/{{track.track_id}}" style="text-decoration: none; color: #fff;">
+            <img src="{{track.track_coverArt}}" alt="{{track.track_name}}">
+            <div class="category-title">{{track.track_name}}</div>
+          </a>
         </div>
-
-        <div class="category-card">
-          <img src="https://i.scdn.co/image/ab6761700000c52c87ab6b4a0c51593853fe2157" alt="Podcasts">
-          <div class="category-title">Merch</div>
-        </div>
-
-        <div class="category-card">
-          <img src="https://i.scdn.co/image/ab67fb8200008e2c64adf130003faa51378e3d2b" alt="Podcasts">
-          <div class="category-title">Happy Christmas</div>
-        </div>
-
-        <div class="category-card">
-          <img src="https://i.scdn.co/image/ab67fb8200005cafa862ab80dd85682b37c4e768" alt="Podcasts">
-          <div class="category-title">Pop</div>
-        </div>
-
-        <div class="category-card">
-          <img src="https://i.scdn.co/image/ab67fb8200005caf271f9d895003c5f5561c1354" alt="Podcasts">
-          <div class="category-title">Mood</div>
-        </div>
-
-        <div class="category-card">
-          <img src="https://i.scdn.co/image/ab67fb8200005caf9e3dea60be755ccd97b7351f" alt="Podcasts">
-          <div class="category-title">Hip-Hop</div>
-        </div>
-        <!-- Repeat for each category -->
-        <!-- ... other categories ... -->
+        {% endfor %}
       </div>
 
       <div class="browse-all">
         <!-- Category Card -->
+        {% for track in third_top_tracks_section %}
         <div class="category-card">
-          <img src="https://t.scdn.co/images/7262179db37c498480ef06bfacb60310.jpeg" alt="Podcasts">
-          <div class="category-title">Podcast Charts</div>
+          <a href="/music/{{track.track_id}}" style="text-decoration: none; color: #fff;">
+            <img src="{{track.track_coverArt}}" alt="{{track.track_name}}">
+            <div class="category-title">{{track.track_name}}</div>
+          </a>
         </div>
-
-        <div class="category-card">
-          <img src="https://t.scdn.co/images/209c867f5bb34076b0dcc9deeb1868e6" alt="Podcasts">
-          <div class="category-title">Podcast New Releases</div>
-        </div>
-
-        <div class="category-card">
-          <img src="https://i.scdn.co/image/9af79fd06e34dea3cd27c4e1cd6ec7343ce20af4" alt="Podcasts">
-          <div class="category-title">Video Podcasts</div>
-        </div>
-
-        <div class="category-card">
-          <img src="https://i.scdn.co/image/ab67fb8200005caf3a75eafe6ba383e4152e6938" alt="Podcasts">
-          <div class="category-title">Fiction & Literature</div>
-        </div>
-
-        <div class="category-card">
-          <img src="https://charts-images.scdn.co/assets/locale_en/regional/weekly/region_global_default.jpg"
-            alt="Podcasts">
-          <div class="category-title">Charts</div>
-        </div>
-
-        <div class="category-card">
-          <img src="https://i.scdn.co/image/ab67706f000000029249b35f23fb596b6f006a15" alt="Podcasts">
-          <div class="category-title">Workout</div>
-        </div>
-        <!-- Repeat for each category -->
-        <!-- ... other categories ... -->
+        {% endfor %}
       </div>
-
     </main>
-
   </div>
-
 </body>
 
 <script>
@@ -237,6 +150,12 @@
         logoutBox.style.display = 'none';
     }
   }
+
+  window.addEventListener('scroll', function() {
+        const musicBar = document.querySelector('.music-bar');
+        const scrollY = window.scrollY || window.pageYOffset;
+        musicBar.style.bottom = `-${scrollY}px`;
+    });
 </script>
 
 </html>

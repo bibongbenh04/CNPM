@@ -187,10 +187,6 @@
                 <span class="sidebar-link-icon"><i class="fa-solid fa-heart"></i></span>
                 Liked Songs
             </a>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-link-icon"><i class="fa-brands fa-itunes-note"></i></span>
-                US-UK Top Charts
-            </a>
         </div>
     </div>
 
@@ -201,7 +197,7 @@
         <br>
         <header class="header-container">
             <div class="head-nav">
-              <form action="search" method="POST">
+              <form action="{% url 'search' %}" method="POST">
                 {% csrf_token %}
                 <div class="search-bar" style="width: 390px;">
                   <input type="search" name="search_query" placeholder="What do you want to listen to?" aria-label="Search" >
@@ -215,7 +211,7 @@
                 {% if user.is_authenticated %}
                   <div class="user-nav" style="position: relative; right: -100px; display: inline-block;">
                     <b style="position: absolute; top: 27px; right: 60px; transform: translateY(-50%); white-space: nowrap;">Welcome, {{user.username}}</b>
-                    <img src="https://i.pinimg.com/originals/4c/1e/91/4c1e91957d5167092927f5a44ffb0fea.jpg" alt="User" style="float: right; width: 50px; height: 50px; border-radius: 50%;" onclick="toggleLogoutBox()">
+                    <img src="{{user.customuser.avatar.url}}" alt="User" style="float: right; width: 50px; height: 50px; border-radius: 50%;" onclick="toggleLogoutBox()">
                     <div id="logout-box" style="display: none; position: absolute; top: 60px; right: 0; background-color: rgb(46, 45, 45); padding: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 10px; width: 150px;">
                       <a href="{% url 'logout' %}" style="text-decoration: none; color: white; font-size: 16px; font-weight: 300; white-space: nowrap; ">Log out</a>
                     </div>
@@ -242,7 +238,7 @@
             <div class="divide-y divide-gray-800">
                 <!-- Single Track Row -->
                 {% for t in data%}
-                <a href="music/{{t.track_uri}}">
+                <a href="/music/{{t.track_uri}}">
                     <div class="flex justify-between items-center py-3">
 
                         <div class="flex items-center space-x-4">

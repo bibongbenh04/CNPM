@@ -1,19 +1,32 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User, auth
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages as django_messages
-from .models import Feature, quizQuestion, Post, Category, categoryQuiz, Science, Header, Portfolio, Store, Comment, Community, ProductImage
-from django.core.serializers import serialize
 from django.utils.translation import gettext as _
-from django.shortcuts import get_object_or_404
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
-from django.contrib.contenttypes.models import ContentType
+from django.db import connection
+from .models import CustomUser, MusicDataSet, UserLikedSongs, UserHistory
+from django.utils import timezone
 import math
 import requests
 import base64
 import json
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import MinMaxScaler
+from datetime import datetime
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
+
+scope = "user-library-read user-read-playback-state user-modify-playback-state"
+sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id='e6084fff3ac4446abcc6f5835c0b9845',
+                                               client_secret='5ab64c21c43442bfa774423eb1bb5b45',
+                                               redirect_uri='http://127.0.0.1:8000/',
+                                               scope=scope))
+
+def play_song(song_uri):
+	sp.start_playback(uris=[song_uri])
 
 def getAccessToken():
 	client_id = 'e6084fff3ac4446abcc6f5835c0b9845'
@@ -38,40 +51,29 @@ def getAuthHeader():
 	access_token = getAccessToken()
 	return {'Authorization': f'Bearer {access_token}'}
 
-def music(request, url):
-	context = getAudioByURI(url)
-	return render(request, 'music.html', context)
-
-def getAudioByURI(id):
-	url = "https://api.spotify.com/v1/tracks/"
-	headers = getAuthHeader()
-	
-	querystring = {"id"}
-	query_url = url + id
-
-	response = requests.get(query_url, headers=headers)
-
-	if response.status_code != 200:
-		print(response.status_code)
-		return None
+def SaveUserHistory(user, track_id, track_name, track_artist, track_popularity, track_duration_ms, track_cover_art_url):
+	if not UserHistory.objects.filter(user=user, track_id=track_id).exists():
+		UserHistory.objects.get_or_create(
+			user=user,
+			track_id=track_id,
+			track_name=track_name,
+			track_artist=track_artist,
+			track_popularity=track_popularity,
+			track_duration_ms=track_duration_ms,
+			track_cover_art_url=track_cover_art_url,
+			played_at = timezone.localtime(timezone.now())
+		)
+		UserHistory.objects.all().order_by('user')
 	else:
-		track = response.json()
-		name_track = track["name"]
-		preview_url = track["preview_url"]
-		artist = track["artists"][0]["name"]
-		image = track["album"]["images"][0]["url"]
-		uri = track["uri"]
-		duration = track["duration_ms"]
-		return {
-			'name_track':name_track,
-			'preview_url':preview_url,
-			'artists': artist,
-			'image': image,
-			'uri': uri,
-			'id': id,
-			'duration': f"{int(duration)//60000:02}" + ":" + f"{math.ceil((float(duration)%60000)/1000):02}"
-		}
-	
+		UserHistory.objects.filter(user=user, track_id=track_id).update(
+			track_name=track_name,
+			track_artist=track_artist,
+			track_popularity=track_popularity,
+			track_duration_ms=track_duration_ms,
+			track_cover_art_url=track_cover_art_url,
+			played_at = timezone.localtime(timezone.now())
+		)
+
 def top_artists():
 	url = "https://api.spotify.com/v1/artists"
 	headers = getAuthHeader()
@@ -102,6 +104,105 @@ def top_artists():
 		print(response.status_code)
 
 	return data
+	
+def music(request, pk):
+	track_id = pk
+	header = getAuthHeader()
+
+	url = "https://api.spotify.com/v1/tracks"
+	query_url = url + "/" + track_id + "?market=VN"
+
+	response = requests.get(query_url, headers=header)
+
+	data = response.json()
+
+	track_name = data["name"]
+	track_coverArt = data["album"]["images"][0]["url"] if len(data["album"]["images"]) > 0 else None
+	track_duration = data["duration_ms"]
+	track_uri = data["uri"]
+	track_artist = data["artists"][0]["name"]
+	#track_preview = data["preview_url"] if "preview_url" in data else None
+	track_popularity = data["popularity"]
+	track_release_date = data["album"]["release_date"]
+	track_artist_id = data["artists"][0]["id"]
+
+	url_artist = "https://api.spotify.com/v1/artists"
+	querystring_artist = url_artist+"/"+track_artist_id
+	response_artist = requests.get(querystring_artist, headers=header)
+	data_artist = response_artist.json()
+	artist_image = data_artist["images"][0]["url"] if len(data_artist["images"]) > 0 else None
+
+	track_info = {
+		'track_id': track_id,
+		'track_name': track_name,
+		'track_coverArt': track_coverArt,
+		'track_duration': track_duration,
+		'track_uri': track_uri[14:],
+		'track_artist': track_artist,
+		'track_artist_id': track_artist_id,
+		#'track_preview': track_preview
+		'track_popularity': track_popularity,
+		'track_album_release_date': track_release_date,
+		'artist_image': artist_image
+	}
+
+	recommend_songs_list = hybird_recommendation(track_info,num_recommendations=5)
+	query_url_recommend_song = url + "?ids=" + ",".join(recommend_songs_list['track_id'].values) + "&market=VN"
+	response_recommend_song = requests.get(query_url_recommend_song, headers=header)
+	data_recommend_song = response_recommend_song.json()
+
+	data_recommend_songs = []
+	for song in data_recommend_song["tracks"]:
+		track_name = song["name"]
+		track_coverArt = song["album"]["images"][0]["url"] if len(song["album"]["images"]) > 0 else None
+		track_duration = song["duration_ms"]
+		track_duration_mn = f"{int(track_duration)//60000:02}" + ":" + f"{math.ceil((float(track_duration)%60000)/1000):02}"
+		track_uri = song["uri"]
+		track_popularity = song["popularity"]
+		track_artist = song["artists"][0]["name"]
+
+		recommend_track_info = {
+			'track_name': track_name,
+			'track_coverArt': track_coverArt,
+			'track_duration': track_duration_mn,
+			'track_uri': track_uri[14:],
+			'track_popularity': track_popularity,
+			'track_artist': track_artist
+		}
+
+		data_recommend_songs.append(recommend_track_info)
+
+	track_info['recommend_songs'] = data_recommend_songs
+
+	return render(request, 'music.html',track_info)
+
+def top_tracks():
+	url = "https://api.spotify.com/v1/playlists"
+	query_string = "/37i9dQZEVXbLdGSmz6xilI?market=VN"
+	query_url = url + query_string
+	
+	headers = getAuthHeader()
+
+	response = requests.get(query_url, headers=headers)
+
+	if response.status_code == 200:
+		tracks = response.json()["tracks"]["items"]
+		data = []
+		for track in tracks:
+			track_name = track["track"]["name"]
+			track_coverArt = track["track"]["album"]["images"][0]["url"] if len(track["track"]["album"]["images"]) > 0 else None
+			track_uri = track["track"]["uri"]
+			track_id = track["track"]["id"]
+			data.append({
+				'track_name': track_name,
+				'track_coverArt': track_coverArt,
+				'track_uri': track_uri[14:],
+				'track_id': track_id
+			})
+
+		return data
+	else:
+		return None
 
 def profile(request, pk):
 	artist_id = pk
@@ -173,76 +274,61 @@ def search(request):
 
 		response = requests.get(query_url, headers=headers)
 
-		tracks = response.json()["tracks"]["items"]
-		data = []
-		for track in tracks:
-			track_name = track["name"]
-			track_coverArt = track["album"]["images"][0]["url"] if len(track["album"]["images"]) > 0 else None
-			track_duration = track["duration_ms"]
-			track_uri = track["uri"]
-			track_artist = track["artists"][0]["name"]
-			data.append({
-				'track_name': track_name,
-				'track_coverArt': track_coverArt,
-				'track_duration': float(track_duration)//60000,
-				'track_uri': track_uri[14:],
-				'track_artist': track_artist
-			})
-		print(data)
-		context = {  # Giả sử kết quả tìm kiếm của bạn
-			'data': data,
-			'query': query,
-			'response':response.json(),
-			'totalCount': response.json()["tracks"]["total"]
-		}
+		if response.status_code == 200:
+			tracks = response.json()["tracks"]["items"]
+			data = []
+			for track in tracks:
+				track_name = track["name"]
+				track_coverArt = track["album"]["images"][0]["url"] if len(track["album"]["images"]) > 0 else None
+				track_duration = track["duration_ms"]
+				track_uri = track["uri"]
+				track_artist = track["artists"][0]["name"]
+				data.append({
+					'track_name': track_name,
+					'track_coverArt': track_coverArt,
+					'track_duration': float(track_duration)//60000,
+					'track_uri': track_uri[14:],
+					'track_artist': track_artist
+				})
+			context = {  # Giả sử kết quả tìm kiếm của bạn
+				'data': data,
+				'query': query,
+				'response':response.json(),
+				'totalCount': response.json()["tracks"]["total"]
+			}
 
-		return render(request, 'search.html', context)
+			return render(request, 'search.html', context)
+		else:
+			return render(request, 'search.html')
 	else:
 		return render(request, 'search.html')
 
+@login_required(login_url='/login')
 # Create your views here.
 def index(request):
 	artist_info = top_artists()
+	top_tracks_info = top_tracks()
+
+	first_top_tracks_section = None
+	second_top_tracks_section = None
+	third_top_tracks_section = None
+
+	if top_tracks_info is None:
+		django_messages.info(request, 'Không thể lấy thông tin bài hát !')
+	else:
+		first_top_tracks_section = top_tracks_info[:5]
+		second_top_tracks_section = top_tracks_info[6:11]
+		third_top_tracks_section = top_tracks_info[12:17]
 	if artist_info is None:
 		django_messages.info(request, 'Không thể lấy thông tin nghệ sĩ !')
-	else:
-		data = {
-			'artist_info': artist_info,
-		}
+
+	data = {
+		'artist_info': artist_info,
+		'first_top_tracks_section': first_top_tracks_section,
+		'second_top_tracks_section': second_top_tracks_section,
+		'third_top_tracks_section': third_top_tracks_section
+	}
 	return render(request, 'index.html', data)
-
-
-
-def load_more_sciences(request):
-    offset = int(request.GET.get('offset', 0))
-    posts = Science.objects.all()[offset:offset+5]  # Lấy 5 bài viết tiếp theo
-    return render(request, 'AdminCus/posts.html', {'posts': posts})
-
-
-def generate_string(n):
-    if n <= 0:
-        return ""
-    else:
-        return ''.join(str(i) for i in range(1, n + 1))
-
-
-def post(request, url):
-    post = get_object_or_404(Post, url=url)
-    content_type = ContentType.objects.get_for_model(Post)
-    get_all_comments = Comment.objects.filter(content_type=content_type, object_id=post.pk)
-    number_of_comments = get_all_comments.count()
-
-    if request.method == 'POST':
-        name = request.POST['name']
-        body = request.POST['body']
-        new_comment = Comment(name=name, body=body, content_type=content_type, object_id=post.pk)  # Corrected variable name
-        new_comment.save()
-        django_messages.success(request, 'Bình Luận Của Bạn Đã Được Thêm Vào !')
-        return redirect('blog', url=url)
-    
-    cats = Category.objects.filter(is_active=True)
-    return render(request, 'AdminCus/tpost.html', {'post': post, 'cats': cats, 'comments': get_all_comments, 'number_of_comments': number_of_comments})
-
 
 def login(request):
 	if request.method == 'POST':
@@ -272,6 +358,7 @@ def logout(request):
 
 def signup(request):
 	if request.method == 'POST':
+		avatar = request.FILES.get('avatar')
 		username = request.POST['username']
 		email = request.POST['email']
 		password = request.POST['password']
@@ -291,6 +378,13 @@ def signup(request):
 			else:
 				user = User.objects.create_user(username=username, email=email, password=password)
 				user.save()
+
+				profile = CustomUser(user=user)
+				if avatar:
+					profile.avatar.save(avatar.name, avatar)
+				else:
+					profile.avatar = 'user/default_avatar.jpg'
+				profile.save()
 
 				user_login = auth.authenticate(username=username, password=password)
 				auth.login(request, user_login)
@@ -315,3 +409,173 @@ def change_password(request):
     else:
         form = PasswordChangeForm(request.user)
     return render(request, 'themes/changePass.html', {'form': form})
+
+def LoadDataSet():
+	query = "SELECT * FROM myapp_musicdataset"
+	with connection.cursor() as cursor:
+		cursor.execute(query)
+		data = cursor.fetchall()
+
+	# Get column names from the model
+	columns = [desc[0] for desc in cursor.description]
+
+	# Exclude 'id' and 'is_active' columns
+	columns_to_exclude = ['id', 'is_active']
+
+	df = pd.DataFrame(data, columns=columns)
+	df = df.drop(columns=columns_to_exclude)
+	return df
+
+def FormatDated(date_str):
+    try:
+        if len(date_str) == 10 and date_str[4] == '-' and date_str[7] == '-':
+            return date_str 
+        else:
+            if len(date_str) == 4:
+                return f"{date_str}-01-01"
+            else:
+                return f"{date_str}-01"
+    except Exception as e:
+        print(f"Error formatting date: {e}")
+        return None
+
+def AddMusicDataToDB(track_info):
+	header = getAuthHeader()
+
+	url = "https://api.spotify.com/v1/audio-features"
+	query_url = url + "/" + track_info['track_id']
+
+	response = requests.get(query_url, headers=header)
+
+	data = response.json()
+
+	danceability = data["danceability"]
+	energy = data["energy"]
+	key = data["key"]
+	loudness = data["loudness"]
+	mode = data["mode"]
+	speechiness = data["speechiness"]
+	acousticness = data["acousticness"]
+	instrumentalness = data["instrumentalness"]
+	liveness = data["liveness"]
+	valence = data["valence"]
+	tempo = data["tempo"]
+
+	track_metadata = MusicDataSet.objects.get_or_create(
+		track_id=track_info['track_id'],
+		track_name=track_info['track_name'],
+		track_artist=track_info['track_artist'],
+		track_popularity=track_info['track_popularity'],
+		track_album_release_date=FormatDated(track_info['track_album_release_date']),
+		playlist_genre=6, #This data is temporary not available
+		danceability=danceability,
+		energy=energy,
+		key=key,
+		loudness=loudness,
+		mode=mode,
+		speechiness=speechiness,
+		acousticness=acousticness,
+		instrumentalness=instrumentalness,
+		liveness=liveness,
+		valence=valence,
+		tempo=tempo
+	)
+
+	if not MusicDataSet.objects.filter(track_id=track_info['track_id']).exists():
+		track_metadata.save()
+
+music_data = LoadDataSet()
+def ScalerDataSet():
+	scaler = MinMaxScaler()
+	music_features = music_data[['danceability', 'energy', 'key',
+							'loudness', 'mode', 'speechiness', 'acousticness',
+							'instrumentalness', 'liveness', 'valence', 'tempo','track_popularity']].values
+	music_features_scaled = scaler.fit_transform(music_features)
+	return music_features_scaled
+
+music_features_scaled = ScalerDataSet()
+
+def content_based_recommendations(track_info, num_recommendations=5, df=music_data, music_features_scaled=music_features_scaled):
+	if track_info['track_id'] not in df['track_id'].values:
+		print("Track not in dataset. Adding track to dataset...")
+		AddMusicDataToDB(track_info)
+		df = LoadDataSet()
+		df.sort_values('track_popularity', ascending=False, inplace=True)
+		df.reset_index(drop=True, inplace=True)
+		music_features_scaled = ScalerDataSet()	
+
+    # Get the index of the input song in the music DataFrame
+	input_song_index = df[df['track_id'] == track_info['track_id']].index[0]
+
+    # Calculate the similarity scores based on music features (cosine similarity)
+	similarity_scores = cosine_similarity([music_features_scaled[input_song_index]], music_features_scaled)
+
+    # Get the indices of the most similar songs
+	similar_song_indices = similarity_scores.argsort()[0][::-1][1:num_recommendations + 1]
+
+    # Get the names of the most similar songs based on content-based filtering
+	content_based_recommendations = df.iloc[similar_song_indices][['track_id','track_name', 'track_artist', 'playlist_genre', 'track_album_release_date', 'track_popularity']]
+
+	return content_based_recommendations
+
+# Function to calculate weighted popularity scores based on release date
+def calculate_weighted_popularity(release_date):
+	# Convert the release date to a datetime object
+	release_date = pd.to_datetime(release_date)
+
+    # Calculate the time span between release date and today's date
+	time_span = datetime.now() - release_date
+
+    # Calculate the weighted popularity score based on time span (e.g., more recent releases have higher weight)
+	weight = 1 / (time_span.days + 1)
+	return weight
+
+def hybird_recommendation(track_info,df=music_data, music_features_scaled = music_features_scaled, num_recommendations=5, alpha=0.5):
+	if track_info['track_id'] not in df['track_id'].values:
+		print("Track not in dataset. Adding track to dataset...")
+		AddMusicDataToDB(track_info)
+		df = LoadDataSet()
+		df.sort_values('track_popularity', ascending=False, inplace=True)
+		df.reset_index(drop=True, inplace=True)
+		music_features_scaled = ScalerDataSet()	
+
+	# Get the index of the input song in the music DataFrame
+	input_song_index = df[df['track_id'] == track_info['track_id']].index[0]
+
+	# Calculate the similarity scores based on music features (cosine similarity)
+	similarity_scores = cosine_similarity([music_features_scaled[input_song_index]], music_features_scaled)
+
+	# Get the indices of the most similar songs
+	similar_song_indices = similarity_scores.argsort()[0][::-1][1:num_recommendations + 1]
+
+	# Get the names of the most similar songs based on content-based filtering
+	content_based_recommendations = df.iloc[similar_song_indices][['track_id','track_name', 'track_artist', 'playlist_genre', 'track_album_release_date', 'track_popularity']]
+
+	# Calculate the weighted popularity scores for the most similar songs
+	content_based_recommendations['weighted_popularity'] = content_based_recommendations['track_album_release_date'].apply(calculate_weighted_popularity)
+
+	# Calculate the hybrid scores
+	content_based_recommendations['hybrid_score'] = (alpha * content_based_recommendations['weighted_popularity']) + ((1 - alpha) * content_based_recommendations['track_popularity'])
+
+	# Sort the hybrid scores in descending order
+	hybrid_recommendations = content_based_recommendations.sort_values('hybrid_score', ascending=False)
+
+	return hybrid_recommendations
+
+def hybird_recommend_for_list_of_tracks(list_of_tracks, num_recommendations=5, alpha=0.5, df=music_data, music_features_scaled=music_features_scaled):
+	hybrid_recommendations = []
+	for track_info in list_of_tracks:
+		if track_info['track_id'] not in df['track_id'].values:
+			print("Track not in dataset. Adding track to dataset...")
+			AddMusicDataToDB(track_info)
+			df = LoadDataSet()
+			df.sort_values('track_popularity', ascending=False, inplace=True)
+			df.reset_index(drop=True, inplace=True)
+			music_features_scaled = ScalerDataSet()
+		
+		hybrid_recommendations.append(hybird_recommendation(track_info, df, music_features_scaled, num_recommendations, alpha))
+
+	combined_recommendations = pd.concat(hybrid_recommendations).drop_duplicates(subset='track_id').reset_index(drop=True)
+	combined_recommendations = combined_recommendations.sort_values('hybrid_score', ascending=False).head(num_recommendations)
+
+	return combined_recommendations
