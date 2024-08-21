@@ -19,7 +19,7 @@
 
         body {
             color: #fff;
-            background-color: #121212;
+            background-color: #353232;
             display: flex;
             height: 100vh;
         }
@@ -138,14 +138,39 @@
         }
 
 
-    /* Sidebar Bottom Section Styles */
-    .sidebar-section {
-        background: #181818;
-        border-radius: 10px;
-        padding: 15px;
-        margin-bottom: 9px;
-        overflow: hidden;
-    }
+        /* Sidebar Bottom Section Styles */
+        .sidebar-section {
+            background: #181818;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 9px;
+            overflow: hidden;
+        }
+
+        .search_song_result {
+            padding: 20px;
+            background-color: #000000;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: -30px;
+        }
+        .searched_song {
+            max-width: 100%;
+        }
+        .searched_song a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .searched_song a:hover {
+            background-color: #282828;
+            transform: scale(1.02);
+        }
     </style>
 </head>
 
@@ -183,11 +208,15 @@
         </div>
         
         <div class="sidebar-section">
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-link-icon"><i class="fa-solid fa-heart"></i></span>
-                Liked Songs
+            <a href="/liked_song/{{user.customuser.id}}" class="sidebar-link">
+              <span class="sidebar-link-icon"><i class="fa-solid fa-heart"></i></span>
+              Liked Songs
             </a>
-        </div>
+            <a href="/history/{{user.customuser.id}}" class="sidebar-link" style="white-space: nowrap;">
+              <span class="sidebar-link-icon" ><i class="fa-solid fa-book"></i></span>
+              Listening History
+            </a>
+          </div>
     </div>
 
     <!-- Main Content -->
@@ -235,24 +264,21 @@
             <br>
             Có tổng {{totalCount}} Kết quả tìm thấy
             <h2 class="text-2xl font-bold mb-4">Search Results</h2>
-            <div class="divide-y divide-gray-800">
+            <div class="search_song_result">
                 <!-- Single Track Row -->
-                {% for t in data%}
-                <a href="/music/{{t.track_uri}}">
-                    <div class="flex justify-between items-center py-3">
-
-                        <div class="flex items-center space-x-4">
-                            <img src="{{t.track_coverArt}}" alt="Song Image" class="w-12 h-12">
-                            <div>
-                                <p class="text-base font-medium">{{t.track_name}}</p>
-                                <p class="text-xs text-gray-400">{{t.track_artist}}</p>
-                            </div>
+                <div class="searched_song">
+                    {% for song in data %}
+                      <a href="/music/{{song.track_uri}}" style="text-decoration: none; display: flex; align-content: center; margin-top: 20px;">
+                        <img src="{{song.track_coverArt}}" alt="Album Cover" style="width: 50px; height: 50px; border-radius: 5px; margin-right: 10px;">
+                        <div class="song-details" style="flex-grow: 1;">
+                          <h4 class="song" style="margin: 0; color: #fff;">{{song.track_name}}</h4>
+                          <h4 class="song" style="margin: 0; color: #bbb;">{{song.track_artist}}</h4>
                         </div>
-                        <div class="text-gray-400">Chưa làm view</div>
-                        <div class="text-gray-400">{{t.track_duration}}</div>
-                    </div>
-                </a>
-                {% endfor %}
+                        <h4 class="play-count" style="margin-right: 200px; color: #ccc; min-width: 90px; font-size: 17px; margin-top: 10px; font-weight: 400;">{{ song.track_popularity }}</h4>
+                        <h4 class="duration" style="margin-left: 10px; color: #ccc; min-width: 50px; font-size: 17px; margin-top: 10px; font-weight: 400;">{{ song.track_duration }}</h4>
+                      </a>
+                    {% endfor %}
+                </div>
                 <!-- Repeat for other tracks -->
             </div>
             <!-- <a href="#" class="text-green-500 text-sm">See more</a> -->

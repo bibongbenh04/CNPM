@@ -1,0 +1,1136 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Music Streaming Service</title>
+    <link rel="stylesheet" type="text/css" href="{% static '/style.css' %}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+      integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      .album-cover {
+        width: 200px;
+        height: auto;
+        margin-right: 25px;
+        border-radius: 5px;
+      }
+      .song-details {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .song .song-title .artist-name {
+        margin: 0px;
+      }
+      .song {
+        margin: 0px;
+        font-size: 14px;
+      }
+      .song-title {
+        font-size: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin: 30px 0 30px 0;
+      }
+      .player-controls {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin-top: 20px;
+        margin-right: 30px;
+      }
+      .control-btn {
+        background-color: transparent;
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        margin: 0 10px;
+        font-size: 20px;
+        cursor: pointer;
+      }
+      .control-btn-play-btn {
+        background-color: transparent;
+        border: none;
+        border-radius: 50%;
+        width: 65px;
+        height: 65px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.3s;
+      }
+      .control-btn:hover {
+        background-color: #bbbbbb;
+      }
+      .control-btn-play-btn:hover {
+        background-color: #1db954;
+      }
+      .progress-container {
+        margin: 0 10px;
+        margin-top: 25px;
+        flex-grow: 2;
+      }
+      .progress-container .progress-bar-background {
+        width: 100%;
+        background: #555;
+        border-radius: 5px;
+        height: 8px;
+        position: relative;
+      }
+      .progress-container .progress-bar {
+        height: 100%;
+        background: #1db954;
+        border-radius: 5px;
+      }
+      .volume-container {
+        display: flex;
+        align-items: center;
+        margin-left: 10px;
+      }
+      .volume .volume_icon {
+        margin-right: 10px; /* Space between icon and slider */
+        color: white; /* Icon color */
+        font-size: 18px; /* Icon size */
+      }
+      .volume-slider {
+        appearance: none; /* Remove default styling */
+        -webkit-appearance: none; /* Remove default styling */
+        width: 150px; /* Slider width */
+        height: 6px; /* Slider height */
+        background: #555; /* Background color for the track */
+        border-radius: 5px; /* Rounded track */
+        outline: none; /* Remove outline */
+      }
+
+      .volume-slider::-webkit-slider-thumb {
+        -webkit-appearance: none; /* Remove default thumb styling */
+        appearance: none; /* Remove default thumb styling */
+        width: 16px; /* Thumb width */
+        height: 16px; /* Thumb height */
+        background: white; /* Thumb color */
+        border-radius: 50%; /* Round thumb */
+        cursor: pointer; /* Pointer cursor */
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.5); /* Optional shadow for depth */
+      }
+
+      .volume-slider::-moz-range-thumb {
+        width: 16px; /* Thumb width */
+        height: 16px; /* Thumb height */
+        background: white; /* Thumb color */
+        border-radius: 50%; /* Round thumb */
+        cursor: pointer; /* Pointer cursor */
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.5); /* Optional shadow for depth */
+      }
+
+      .volume-slider::-ms-thumb {
+        width: 16px; /* Thumb width */
+        height: 16px; /* Thumb height */
+        background: white; /* Thumb color */
+        border-radius: 50%; /* Round thumb */
+        cursor: pointer; /* Pointer cursor */
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.5); /* Optional shadow for depth */
+      }
+
+      /* Style for the track before the thumb */
+      .volume-slider::-webkit-slider-runnable-track {
+        background: #555; /* Background color for the track */
+        border-radius: 5px; /* Rounded track */
+      }
+
+      .volume-slider::-moz-range-track {
+        background: #555; /* Background color for the track */
+        border-radius: 5px; /* Rounded track */
+      }
+
+      .volume-slider::-ms-track {
+        background: #555; /* Background color for the track */
+        border-radius: 5px; /* Rounded track */
+        height: 6px; /* Track height */
+        border: none; /* Remove border */
+      }
+
+      /* Optional: Hide the default track in Internet Explorer */
+      .volume-slider::-ms-fill-lower {
+        background: #1db954; /* Color for lower track (before thumb) */
+        border-radius: 5px; /* Rounded track */
+      }
+
+      .volume-slider::-ms-fill-upper {
+        background: #555; /* Color for upper track (after thumb) */
+        border-radius: 5px; /* Rounded track */
+      }
+
+      .volume-slider::-webkit-slider-runnable-track {
+        background: linear-gradient(
+          to right,
+          #1db954 0%,
+          #1db954 var(--volume-percent),
+          #555 var(--volume-percent),
+          #555 100%
+        );
+        border-radius: 5px; /* Rounded track */
+      }
+
+      .volume-slider::-moz-range-track {
+        background: linear-gradient(
+          to right,
+          #1db954 0%,
+          #1db954 var(--volume-percent),
+          #555 var(--volume-percent),
+          #555 100%
+        );
+        border-radius: 5px; /* Rounded track */
+      }
+      .like-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        justify-content: right;
+        align-items: center;
+      }
+      .music-recommend {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #1d1f21;
+        border-radius: 10px;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .recommended_song {
+        max-width: 100%;
+      }
+      .recommended_song a {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s, transform 0.2s;
+      }
+      .recommended_song a:hover {
+        background-color: #6c6767;
+        transform: scale(1.02);
+      }
+      .editModal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0, 0.8);
+      }
+      .editModal-content {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        background-color: #121212;
+        margin: 5% auto;
+        padding: 20px;
+        border-radius: 10px;
+        width: 80%;
+        max-width: 600px;
+        color: white;
+      }
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+      .close:hover,
+      .close:focus {
+        color: white;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .img-container {
+        flex: 1;
+      }
+      .cover-preview {
+        margin-right: 10px;
+      }
+      .cover-preview img {
+        width: 200px;
+        height: auto;
+        border-radius: 8px;
+      }
+
+      .text-container {
+        flex: 2;
+      }
+
+      input[type="text"],
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: none;
+        border-radius: 5px;
+        background-color: #2a2a2a;
+        color: white;
+        font-size: 16px;
+        text-align: left;
+      }
+
+      input[type="text"]::placeholder {
+        text-align: left;
+      }
+
+      textarea {
+        height: 142px;
+        text-align: justify;
+        resize: none;
+      }
+
+      textarea::placeholder {
+        color: #bbb;
+        text-align: left;
+      }
+
+      .success-modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0, 0.8);
+      }
+
+      .successModal-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: #121212;
+        margin: 5% auto;
+        padding: 20px;
+        border-radius: 10px;
+        width: 80%;
+        max-width: 600px;
+        color: white;
+      }
+
+      .world_ressetto {
+        margin-top: 20px;
+        background-color: #f1f3f2;
+        color: rgb(26, 25, 25); /* Button text color */
+        padding: 10px 15px; /* Button padding */
+        border: none;
+        border-radius: 50px; /* Rounded corners */
+        cursor: pointer; /* Pointer cursor */
+        font-size: 16px; /* Font size */
+        font-weight: 600; /* Font weight */
+        float: right;
+      }
+
+      .world_ressetto:hover {
+        background-color: #fcfffd;
+      }
+
+      .editPlaylist {
+        background-color: #f1f3f2; /* Green button color */
+        color: rgb(26, 25, 25); /* Button text color */
+        padding: 10px 15px; /* Button padding */
+        border: none;
+        border-radius: 50px; /* Rounded corners */
+        cursor: pointer; /* Pointer cursor */
+        font-size: 16px; /* Font size */
+        font-weight: 600; /* Font weight */
+        float: right;
+      }
+
+      .editPlaylist:hover {
+        background-color: #fcfffd; /* Dark green button color */
+      }
+
+      .search_song {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #1d1f21;
+        border-radius: 10px;
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      .search_song_config {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #1d1f21;
+        border-radius: 10px;
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      .playlist_container {
+        margin-top: 40px;
+        margin-left: 5px;
+        width: 115%;
+        color: #fff;
+        font-family: Arial, Helvetica, sans-serif;
+        border-radius: 5px;
+        overflow: hidden;
+      }
+
+      .playlist_header,
+      .track {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #333;
+      }
+
+      .playlist_header {
+        font-weight: bold;
+        background-color: #1e1e1e;
+      }
+
+      .track_list {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header_item,
+      .track_item {
+        flex: 0.2;
+        text-align: left;
+        padding: 0 10px;
+      }
+
+      .track {
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      .track:hover {
+        background-color: #2a2a2a;
+        color: #1db954;
+      }
+
+      .track_item {
+        display: flex;
+        align-items: center;
+      }
+
+      .playlist_track_cover {
+        width: 50px;
+        height: 50px;
+        border-radius: 5px;
+        margin-right: 10px;
+      }
+
+      .playlist_track_title {
+        transition: color 0.3s;
+        font-weight: bold;
+      }
+
+      .remove_track {
+        background-color: transparent;
+        color: #bbb;
+        border: none;
+        font-size: 30px;
+        cursor: pointer;
+      }
+
+      .remove_track:hover {
+        color: rgb(255, 255, 255);
+      }
+    </style>
+  </head>
+
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      background-color: #1d1f21;
+    "
+  >
+    <!-- Sidebar remains unchanged -->
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <!-- Spotify Logo -->
+        <img
+          src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png"
+          alt="Spotify Logo"
+          style="
+            width: 100%;
+            height: auto;
+            padding: 20px;
+            box-sizing: border-box;
+          "
+        />
+
+        <a href="/" class="sidebar-link">
+          <span class="sidebar-link-icon"
+            ><i class="fa-solid fa-house"></i
+          ></span>
+          Home
+        </a>
+        <a href="/search/" class="sidebar-link">
+          <span class="sidebar-link-icon"
+            ><i class="fa-solid fa-magnifying-glass"></i
+          ></span>
+          Search
+        </a>
+      </div>
+
+      <!-- Bottom section of the sidebar -->
+      <div class="sidebar-section">
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon"
+            ><i class="fa-solid fa-book"></i
+          ></span>
+          Your Library
+        </a>
+        <div class="create-playlist">
+          <h4>Create your first playlist</h4>
+          <p>It easy we will help you</p>
+          <button>Create playlist</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <a href="/liked_song/{{user.customuser.id}}" class="sidebar-link">
+          <span class="sidebar-link-icon"
+            ><i class="fa-solid fa-heart"></i
+          ></span>
+          Liked Songs
+        </a>
+        <a
+          href="/history/{{user.customuser.id}}"
+          class="sidebar-link"
+          style="white-space: nowrap"
+        >
+          <span class="sidebar-link-icon"
+            ><i class="fa-solid fa-book"></i
+          ></span>
+          Listening History
+        </a>
+      </div>
+    </div>
+
+    <div style="margin-left: 240px; padding: 10px">
+      <header class="header-container" style="background-color: #1d1f21">
+        <div class="head-nav">
+          <form action="{% url 'search' %}" method="POST">
+            {% csrf_token %}
+            <div class="search-bar" style="width: 390px">
+              <input
+                type="search"
+                name="search_query"
+                placeholder="What do you want to listen to?"
+                aria-label="Search"
+              />
+              <button type="submit" aria-label="Search">🔍</button>
+            </div>
+          </form>
+
+          <div class="login-button">
+            {% if user.is_authenticated %}
+            <div
+              class="user-nav"
+              style="position: relative; right: -100px; display: inline-block"
+            >
+              <b
+                style="
+                  position: absolute;
+                  top: 27px;
+                  right: 60px;
+                  transform: translateY(-50%);
+                  white-space: nowrap;
+                "
+                >Welcome, {{user.username}}</b
+              >
+              <img
+                src="{{user.customuser.avatar.url}}"
+                alt="User"
+                style="
+                  float: right;
+                  width: 50px;
+                  height: 50px;
+                  border-radius: 50%;
+                "
+                onclick="toggleLogoutBox()"
+              />
+              <div
+                id="logout-box"
+                style="
+                  display: none;
+                  position: absolute;
+                  top: 60px;
+                  right: 0;
+                  background-color: rgb(46, 45, 45);
+                  padding: 10px;
+                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                  border-radius: 10px;
+                  width: 150px;
+                "
+              >
+                <a
+                  href="{% url 'logout' %}"
+                  style="
+                    text-decoration: none;
+                    color: white;
+                    font-size: 16px;
+                    font-weight: 300;
+                    white-space: nowrap;
+                  "
+                  >Log out</a
+                >
+              </div>
+            </div>
+            {% else %}
+            <a href="signup">
+              <button type="button" class="signup">Sign Up</button>
+            </a>
+            <a href="login">
+              <button type="button" class="login">Login</button>
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </header>
+
+      <div
+        class="music-player"
+        style="
+          padding: 10px;
+          display: flex;
+          justify-content: left;
+          align-items: center;
+          background: linear-gradient(#5a7d9f, #3a3d40);
+          width: 110%;
+          overflow-x: hidden;
+        "
+      >
+        <!-- Music Player Interface -->
+        <div
+          class="player-container"
+          style="display: flex; align-items: center; height: 100%"
+        >
+          <img
+            class="album-cover"
+            src="{{playlist_image_url}}"
+            alt="Album Cover"
+            id="coverImage"
+          />
+          <div
+            class="song-details"
+            style="display: flex; align-items: flex-start"
+          >
+            <h4 class="song" style="margin: 0">Playlist</h4>
+            <h1 class="song-title" style="margin: 0" id="playlistName">
+              {{playlist_name}}
+            </h1>
+            <h4
+              class="description"
+              style="
+                font-size: 13px;
+                margin-bottom: 40px;
+                font-weight: 400;
+                color: #bbbbbb;
+              "
+              id="playlistDescription"
+            >
+              {{playlist_description}}
+            </h4>
+            <h4 class="user_name" style="font-size: 14px">{{user.username}}</h4>
+          </div>
+        </div>
+      </div>
+      <audio>
+        <source id="music-player" src="{{track_preview}}" type="audio/mpeg" />
+        Your browser does not support the audio element.
+      </audio>
+      <div class="player-controls">
+        <button id="prev" class="control-btn">
+          <i class="fa-solid fa-backward-step"></i>
+        </button>
+        <button id="play-pause" class="control-btn-play-btn">
+          <img
+            src="https://jccdallas.org/wp-content/uploads/2020/06/Spotify-Play-Button.png"
+            alt="Play Button"
+            style="width: 70px; height: 70px"
+          />
+        </button>
+        <button id="next" class="control-btn">
+          <i class="fa-solid fa-forward-step"></i>
+        </button>
+        <div class="progress-container">
+          <div class="progress-bar-background">
+            <div
+              class="progress-bar"
+              id="progress"
+              style="width: 20%"
+              value="0"
+              min="0"
+              max="100"
+            ></div>
+          </div>
+          <div class="time-stamps">
+            <span id="current-time">0:00</span>
+            <span id="total-duration">4:00</span>
+          </div>
+        </div>
+        <div class="volume-container">
+          <div class="volume">
+            <label for="volume-range" class="volume_icon"
+              ><i class="fa-solid fa-volume-high"></i
+            ></label>
+            <input
+              type="range"
+              id="volume-range"
+              min="0"
+              max="100"
+              value="50"
+              class="volume-slider"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="artist-info" style="width: fit-content">
+        <div
+          style="
+            text-decoration: none;
+            display: flex;
+            justify-content: flex-start;
+            margin-left: 20px;
+            margin-top: 70px;
+          "
+        >
+          <!-- Current track image goes here-->
+          <img
+            src="/temp_stuff/temp_playlistTrack_img.jpg"
+            alt="Artist Avatar"
+            style="
+              width: 80px;
+              height: 80px;
+              border-radius: 50%;
+              margin-right: 5px;
+              margin-top: -5px;
+            "
+          />
+          <h4
+            style="
+              color: #fff;
+              margin-top: 15px;
+              font-weight: 550;
+              font-size: 15px;
+            "
+          >
+            Current Playing <br />
+            The song name goes hereee
+          </h4>
+        </div>
+      </div>
+
+      <div class="playlist_container">
+        <div class="playlist_header">
+          <div class="header_item">#</div>
+          <div class="header_item">Title</div>
+          <div class="header_item">Aritst</div>
+          <div class="header_item">Track Popularity</div>
+          <div class="header_item"><i class="fa-regular fa-clock"></i></div>
+          <div class="header_item"></div>
+        </div>
+
+        {% if playlist_tracks == None %}
+        <h4 style="color: #fff; margin: 20px 460px">
+          No tracks in this playlist
+        </h4>
+        {% else %}
+        <div class="track_list">
+          {% for track in playlist_tracks %}
+          <div class="track">
+            <div class="track_item">{{track.track_number}}</div>
+            <div class="track_item">
+              <img
+                src="{{track.track_coverArt}}"
+                alt="Album Cover"
+                class="playlist_track_cover"
+              />
+              <span class="playlist_track_title">{{track.track_name}}</span>
+            </div>
+            <div class="track_item">{{track.track_artist}}</div>
+            <div class="track_item">{{track.track_popularity}}</div>
+            <div class="track_item">{{track.track_duration}}</div>
+            <div class="track_item">
+              <button
+                class="remove_track"
+                onclick="removeSongFromPlaylist('{{track|escapejs|safe}}', '{{playlist_id}}')"
+              >
+                &times;
+              </button>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="search_song">
+        <h2>Let's find something for your playlist</h2>
+        <form id="searchForm" onsubmit="return false;">
+          {% csrf_token %}
+          <div
+            class="search-bar"
+            style="
+              width: 400px;
+              height: 50px;
+              border-radius: 10px;
+              margin-top: 20px;
+            "
+          >
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input
+              type="search"
+              id="search_query"
+              name="search_query"
+              placeholder="Search for songs"
+              aria-label="Search"
+              oninput="searchSong()"
+            />
+          </div>
+        </form>
+      </div>
+
+      <div class="search_song_config">
+        <div id="search_results" class="recommended_song">
+          <!-- Search results will be displayed here -->
+        </div>
+      </div>
+
+      <div class="music-recommend">
+        <h2>Recommended</h2>
+        <h4 style="font-size: 15px; font-weight: 400; color: #979191">
+          Based on this playlist
+        </h4>
+        <div class="recommended_song">
+          {% for song in recommend_songs %}
+          <div
+            class="track"
+            style="
+              text-decoration: none;
+              display: flex;
+              align-content: center;
+              margin-top: 20px;
+            "
+            id="recommend_song_{{ forloop.counter }}"
+            onclick="addSongToPlaylist('{{song|escapejs|safe}}', '{{playlist_id}}')"
+          >
+            <img
+              src="{{song.track_coverArt}}"
+              alt="Album Cover"
+              style="
+                width: 50px;
+                height: 50px;
+                border-radius: 5px;
+                margin-right: 10px;
+              "
+            />
+            <div class="song-details" style="flex-grow: 1">
+              <h4 class="song" style="margin: 0; color: #fff">
+                {{song.track_name}}
+              </h4>
+              <h4 class="song" style="margin: 0; color: #bbb">
+                {{song.track_artist}}
+              </h4>
+            </div>
+            <h4
+              class="play-count"
+              style="
+                margin-right: 200px;
+                color: #ccc;
+                min-width: 90px;
+                font-size: 17px;
+                margin-top: 10px;
+                font-weight: 400;
+              "
+            >
+              {{ song.track_popularity }}
+            </h4>
+            <h4
+              class="duration"
+              style="
+                margin-left: 10px;
+                color: #ccc;
+                min-width: 50px;
+                font-size: 17px;
+                margin-top: 10px;
+                font-weight: 400;
+              "
+            >
+              {{ song.track_duration }}
+            </h4>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="editModal" id="editModal">
+        <div class="editModal-content">
+          <div class="img-container">
+            <h2>Edit Details</h2>
+            <div class="cover-preview">
+              <img
+                src="{{track_coverArt}}"
+                alt="Cover Preview"
+                class="preview-img"
+              />
+            </div>
+          </div>
+          <div class="text-container">
+            <span class="close" id="closeModal">&times;</span>
+            <input
+              type="text"
+              id="playlist_new_name"
+              name="playlist_new_name"
+              placeholder="playlist_name"
+            />
+            <textarea
+              id="playlist_new_description"
+              name="playlist_new_description"
+              placeholder="Description..."
+            ></textarea>
+            <button class="editPlaylist" id="saveChanges">Save</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="success-modal" class="success-modal">
+        <div class="successModal-content" id="successModal-content">
+          <p>Song added to playlist successfully!</p>
+          <button onclick="world_resetto()" class="world_ressetto">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    function world_resetto() {
+      window.location.reload();
+    }
+    function searchSong() {
+      const query = document.getElementById("search_query").value;
+      const resultsContainer = document.getElementById("search_results");
+      const playlist_id = "{{ playlist_id }}";
+
+      resultsContainer.innerHTML = "";
+
+      if (query == 0) return;
+
+      fetch("/search-song/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: "search_query=" + query,
+      })
+        .then((response) => response.json())
+        .then((context) => {
+          const { data, query, response, totalCount } = context;
+
+          data.forEach((song) => {
+            console.log(song);
+            const songElement = document.createElement("div");
+            songElement.className = "recommended_song";
+            songElement.innerHTML = `
+              <div class="track" style="text-decoration: none; display: flex; align-content: center; margin-top: 20px">
+                <img src="${song.track_coverArt}" alt="Album Cover" style="width: 50px; height: 50px; border-radius: 5px; margin-right: 10px" />
+                <div class="song-details" style="flex-grow: 1">
+                  <h4 class="song" style="margin: 0; color: #fff">${song.track_name}</h4>
+                  <h4 class="song" style="margin: 0; color: #bbb">${song.track_artist}</h4>
+                </div>
+                <h4 class="play-count" style="margin-right: 200px; color: #ccc; min-width: 90px; font-size: 17px; margin-top: 10px; font-weight: 400">${song.track_popularity}</h4>
+                <h4 class="duration" style="margin-left: 10px; color: #ccc; min-width: 50px; font-size: 17px; margin-top: 10px; font-weight: 400">${song.track_duration}</h4>
+              </div>
+            `;
+            songElement.addEventListener("click", () =>
+              addSongToPlaylist(song, playlist_id)
+            );
+            resultsContainer.appendChild(songElement);
+          });
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    }
+
+    function addSongToPlaylist(song, playlist_id) {
+      if (typeof song === "string") {
+        song = song.replace(/'/g, '"');
+        song = JSON.parse(song);
+      }
+      const url = `/add_song/${playlist_id}`;
+      const playlist_tracks = "{{ playlist_tracks }}";
+      if (playlist_tracks.includes(song.track_uri)) {
+        alert("Song already in playlist");
+        return;
+      }
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: `track_id=${song.track_uri}`,
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("Network response was not ok");
+          const successModal = document.getElementById("success-modal");
+          successModal.style.display = "block";
+        })
+        .catch((error) => {
+          console.error("Error adding song:", error);
+        });
+    }
+
+    function removeSongFromPlaylist(song, playlist_id) {
+      if (typeof song === "string") {
+        song = song.replace(/'/g, '"');
+        song = JSON.parse(song);
+      }
+      const url = `/remove_song/${playlist_id}`;
+      const playlist_tracks = "{{ playlist_tracks }}";
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: `track_id=${song.track_uri}`,
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("Network response was not ok");
+          const successModal = document.getElementById("success-modal");
+          const successModalContent = document.getElementById(
+            "successModal-content"
+          );
+          successModalContent.innerHTML = `
+            <p>Song removed from playlist successfully!</p>
+            <button onclick="world_resetto()" class="world_ressetto">Close</button>
+          `;
+          successModal.style.display = "block";
+        })
+        .catch((error) => {
+          console.error("Error adding song:", error);
+        });
+    }
+
+    function toggleLogoutBox() {
+      var logoutBox = document.getElementById("logout-box");
+      if (
+        logoutBox.style.display === "none" ||
+        logoutBox.style.display === ""
+      ) {
+        logoutBox.style.display = "block";
+      } else {
+        logoutBox.style.display = "none";
+      }
+    }
+
+    const volumeSlider = document.getElementById("volume-range");
+
+    // Set initial volume highlight
+    function updateVolumeHighlight() {
+      const volumePercent = volumeSlider.value;
+      volumeSlider.style.setProperty("--volume-percent", `${volumePercent}%`);
+    }
+
+    //get the modal
+    const editModal = document.getElementById("editModal");
+    const closeEditModal = document.getElementById("closeModal");
+    const coverImage = document.getElementById("coverImage");
+    const playlistName = document.getElementById("playlist_new_name");
+    const playlistDescription = document.getElementById(
+      "playlist_new_description"
+    );
+    const saveChanges = document.getElementById("saveChanges");
+
+    coverImage.onclick = function () {
+      editModal.style.display = "block";
+      playlistName.value = document
+        .getElementById("playlistName")
+        .textContent.trim();
+      playlistDescription.value = document
+        .getElementById("playlistDescription")
+        .textContent.trim();
+    };
+
+    closeEditModal.onclick = function () {
+      editModal.style.display = "none";
+    };
+
+    window.onclick = function (event) {
+      if (event.target == editModal) {
+        editModal.style.display = "none";
+      }
+    };
+
+    saveChanges.onclick = function () {
+      const newPlaylistName = playlistName.value;
+      const newPlaylistDescription = playlistDescription.value;
+      document.getElementById("playlistName").textContent = newPlaylistName;
+      document.getElementById("playlistDescription").textContent =
+        newPlaylistDescription;
+      editModal.style.display = "none";
+    };
+
+    function onPlaylistInfoChange(playlistID) {
+      const newPlaylistName =
+        document.getElementById("playlist_new_name").value;
+      const newPlaylistDescription = document.getElementById(
+        "playlist_new_description"
+      ).value;
+      const url = `/edit_playlist/${playlistID}`;
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: `playlist_name=${newPlaylistName}&playlist_description=${newPlaylistDescription}`,
+      })
+        .then((response) => {
+          if (!response.ok) throw new Error("Network response was not ok");
+          document.getElementById("playlistName").textContent = newPlaylistName;
+          document.getElementById("playlistDescription").textContent =
+            newPlaylistDescription;
+          editModal.style.display = "none";
+        })
+        .catch((error) => {
+          console.error("Error editing playlist:", error);
+        });
+    }
+
+    // Update highlight on input change
+    volumeSlider.addEventListener("input", updateVolumeHighlight);
+
+    // Initialize highlight on page load
+    updateVolumeHighlight();
+  </script>
+</html>

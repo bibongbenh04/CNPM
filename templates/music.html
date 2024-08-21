@@ -245,9 +245,13 @@
         </div>
     
         <div class="sidebar-section">
-          <a href="#" class="sidebar-link">
+          <a href="/liked_song/{{user.customuser.id}}" class="sidebar-link">
             <span class="sidebar-link-icon"><i class="fa-solid fa-heart"></i></span>
             Liked Songs
+          </a>
+          <a href="/history/{{user.customuser.id}}" class="sidebar-link" style="white-space: nowrap;">
+            <span class="sidebar-link-icon" ><i class="fa-solid fa-book"></i></span>
+            Listening History
           </a>
         </div>
       </div>
@@ -358,7 +362,19 @@
               <input type="range" id="volume-range" min="0" max="100" value="50" class="volume-slider">
             </div>
             <div class="like-btn">
-              <button id="like" class="control-btn"><i class="fa-solid fa-heart"></i></button>
+              <form action="{% url 'liked_song_process' track_id %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="user" value = "{{user}}">
+                <input type="hidden" name="track_id" value="{{track_id}}">
+                <input type="hidden" name="track_name" value="{{track_name}}">
+                <input type="hidden" name="track_artist" value="{{track_artist}}">
+                <input type="hidden" name="track_coverArt" value="{{track_coverArt}}">
+                <input type="hidden" name="track_duration" value="{{track_duration}}">
+                <input type="hidden" name="track_popularity" value="{{track_popularity}}">
+                <button type="submit" id="like" name="submit_like" class="control-btn" onclick="onLikeClick()">
+                  <i class="fa-solid fa-heart"></i>
+                </button>
+              </form>
             </div>
           </div>
       </div>
@@ -410,10 +426,21 @@
       volumeSlider.style.setProperty('--volume-percent', `${volumePercent}%`);
   }
 
+  function onLikeClick() {
+    const likeButton = document.getElementById('like');
+    const liked = "{{liked}}";
+    if (liked == "True") {
+      likeButton.style.color = '#1db954';
+    } else {
+      likeButton.style.color = 'none';
+    }
+  }
+
   // Update highlight on input change
   volumeSlider.addEventListener('input', updateVolumeHighlight);
 
   // Initialize highlight on page load
   updateVolumeHighlight();
+  onLikeClick();
 </script>
 </html>

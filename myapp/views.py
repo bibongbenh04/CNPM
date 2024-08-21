@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User, auth
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages as django_messages
@@ -6,8 +6,11 @@ from django.utils.translation import gettext as _
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from django.db import connection
-from .models import CustomUser, MusicDataSet, UserLikedSongs, UserHistory
+from django.http import JsonResponse
+from .models import CustomUser, MusicDataSet, UserLikedSongs, UserHistory, user_playlist
 from django.utils import timezone
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 import math
 import requests
 import base64
@@ -16,17 +19,7 @@ import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
 from datetime import datetime
-import spotipy
-from spotipy.oauth2 import SpotifyOAuth
 
-scope = "user-library-read user-read-playback-state user-modify-playback-state"
-sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id='e6084fff3ac4446abcc6f5835c0b9845',
-                                               client_secret='5ab64c21c43442bfa774423eb1bb5b45',
-                                               redirect_uri='http://127.0.0.1:8000/',
-                                               scope=scope))
-
-def play_song(song_uri):
-	sp.start_playback(uris=[song_uri])
 
 def getAccessToken():
 	client_id = 'e6084fff3ac4446abcc6f5835c0b9845'
@@ -104,7 +97,7 @@ def top_artists():
 		print(response.status_code)
 
 	return data
-	
+
 def music(request, pk):
 	track_id = pk
 	header = getAuthHeader()
@@ -126,6 +119,14 @@ def music(request, pk):
 	track_release_date = data["album"]["release_date"]
 	track_artist_id = data["artists"][0]["id"]
 
+	user = request.user
+	if user.is_authenticated:
+		user = CustomUser.objects.get(user=user)
+		liked = UserLikedSongs.objects.filter(user=user, track_id=track_id).exists()
+		SaveUserHistory(user, track_id, track_name, track_artist, track_popularity, track_duration, track_coverArt)
+
+	print(liked)
+
 	url_artist = "https://api.spotify.com/v1/artists"
 	querystring_artist = url_artist+"/"+track_artist_id
 	response_artist = requests.get(querystring_artist, headers=header)
@@ -143,7 +144,8 @@ def music(request, pk):
 		#'track_preview': track_preview
 		'track_popularity': track_popularity,
 		'track_album_release_date': track_release_date,
-		'artist_image': artist_image
+		'artist_image': artist_image,
+		'liked': liked
 	}
 
 	recommend_songs_list = hybird_recommendation(track_info,num_recommendations=5)
@@ -175,6 +177,200 @@ def music(request, pk):
 	track_info['recommend_songs'] = data_recommend_songs
 
 	return render(request, 'music.html',track_info)
+
+def history(request, pk):
+	user_id = pk
+	user = get_object_or_404(CustomUser, id=user_id)
+	history = UserHistory.objects.filter(user=user).order_by('-played_at')
+	data = []
+	for track in history:
+		track_name = track.track_name
+		track_coverArt = track.track_cover_art_url
+		track_duration = track.track_duration_ms
+		track_uri = track.track_id
+		track_artist = track.track_artist
+		track_popularity = track.track_popularity
+		data.append({
+			'track_name': track_name,
+			'track_coverArt': track_coverArt,
+			'track_duration': f"{int(track_duration)//60000:02}" + ":" + f"{math.ceil((float(track_duration)%60000)/1000):02}",
+			'track_uri': track_uri,
+			'track_artist': track_artist,
+			'track_popularity': track_popularity,
+		})
+	return render(request, 'history.html', {'data': data})
+
+def liked(request, pk):
+	user_id = pk
+	user = get_object_or_404(CustomUser, id=user_id)
+	history = UserLikedSongs.objects.filter(user=user).order_by('-liked_at')
+	data = []
+	for track in history:
+		track_name = track.track_name
+		track_coverArt = track.track_cover_art_url
+		track_duration = track.track_duration_ms
+		track_uri = track.track_id
+		track_artist = track.track_artist
+		track_popularity = track.track_popularity
+		data.append({
+			'track_name': track_name,
+			'track_coverArt': track_coverArt,
+			'track_duration': f"{int(track_duration)//60000:02}" + ":" + f"{math.ceil((float(track_duration)%60000)/1000):02}",
+			'track_uri': track_uri,
+			'track_artist': track_artist,
+			'track_popularity': track_popularity,
+		})
+	return render(request, 'liked_song.html', {'data': data})
+
+def liked_song_process(request, pk):
+	if request.method == 'POST':
+		track_id = request.POST.get('track_id')
+		user = request.user
+		track_name = request.POST.get('track_name')
+		track_artist = request.POST.get('track_artist')
+		track_popularity = request.POST.get('track_popularity')
+		track_duration = request.POST.get('track_duration')
+		track_coverArt = request.POST.get('track_coverArt')
+
+		if user.is_authenticated:
+			user = CustomUser.objects.get(user=user)
+			if not UserLikedSongs.objects.filter(user=user, track_id=track_id).exists():
+				UserLikedSongs.objects.get_or_create(user=user, track_id=track_id, track_name=track_name, track_artist=track_artist, track_popularity=track_popularity, track_duration_ms=track_duration, track_cover_art_url=track_coverArt)
+				UserLikedSongs.objects.all().order_by('user')
+			else:
+				UserLikedSongs.objects.filter(user=user, track_id=track_id).delete()
+				UserLikedSongs.objects.all().order_by('user')
+		return HttpResponseRedirect(reverse('music', args=[str(pk)]))
+
+def create_playlist(request):
+	print('Create playlist')
+	user = request.user
+	if user.is_authenticated:
+		user = CustomUser.objects.get(user=user)
+		if request.method == 'POST':
+			if user_playlist.objects.filter(user=user).exists():
+				playlist_name = 'My Playlist # ' + str(user_playlist.objects.filter(user=user).count() + 1)
+				playlist = user_playlist(user=user, playlist_name=playlist_name, playlist_description='My playlist', playlist_image_url='/temp_stuff/playlist_image.jpg', playlist_tracks_ids=[])
+				playlist.save()
+			else:
+				playlist_name = 'My Playlist # 1'
+				playlist = user_playlist(user=user, playlist_name=playlist_name, playlist_description='My playlist', playlist_image_url='/temp_stuff/playlist_image.jpg' , playlist_tracks_ids=[])
+				playlist.save()
+		return redirect('playlist', pk=playlist.playlist_id)
+	
+
+def playlist(request, pk):
+	playlist_id = pk
+	user = request.user
+	header = getAuthHeader()
+	url = "https://api.spotify.com/v1/tracks"
+	if user.is_authenticated:
+		user = CustomUser.objects.get(user=user)
+		playlist = get_object_or_404(user_playlist, playlist_id=playlist_id)
+		playlist_tracks = []
+		if playlist.playlist_tracks_ids != None and len(playlist.playlist_tracks_ids) > 0:
+			for track_id in playlist.playlist_tracks_ids:
+				query_track_ids = ",".join(playlist.playlist_tracks_ids)
+			print(playlist.playlist_tracks_ids)
+			print(query_track_ids)
+			query_url = url + "?market=VN&ids=" + query_track_ids
+			response = requests.get(query_url, headers=header)
+			data = response.json()
+			track_number = 1
+			for track in data["tracks"]:
+				track_id = track["id"]
+				track_name = track["name"]
+				track_coverArt = track["album"]["images"][0]["url"] if len(track["album"]["images"]) > 0 else None
+				track_duration = track["duration_ms"]
+				track_uri = track["uri"]
+				track_artist = track["artists"][0]["name"]
+				track_popularity = track["popularity"]
+				track_album_release_date = track["album"]["release_date"]
+				convert_date = FormatDated(track_album_release_date)
+				track_info = {
+					'track_id': track_id,
+					'track_name': track_name,
+					'track_coverArt': track_coverArt,
+					'track_duration': f"{int(track_duration)//60000:02}" + ":" + f"{math.ceil((float(track_duration)%60000)/1000):02}",
+					'track_uri': track_uri[14:],
+					'track_artist': track_artist,
+					'track_popularity': track_popularity,
+					'track_number': track_number,
+					'track_album_release_date': convert_date
+				}
+				track_number += 1
+				playlist_tracks.append(track_info)
+		else:
+			playlist_tracks = None
+		
+		recommend_songs_list = None
+		if playlist_tracks is not None:
+			recommend_songs = hybird_recommend_for_list_of_tracks(playlist_tracks,num_recommendations=5)
+			query_recommend_songs = ",".join(recommend_songs['track_id'].values)
+			query_url_recommend_songs = url + "?market=VN&ids=" + query_recommend_songs
+			response_recommend_songs = requests.get(query_url_recommend_songs, headers=header)
+			data_recommend_songs = response_recommend_songs.json()
+			recommend_songs_list = []
+			for song in data_recommend_songs["tracks"]:
+				track_id = song["id"]
+				track_name = song["name"]
+				track_coverArt = song["album"]["images"][0]["url"] if len(song["album"]["images"]) > 0 else None
+				track_duration = song["duration_ms"]
+				track_duration_mn = f"{int(track_duration)//60000:02}" + ":" + f"{math.ceil((float(track_duration)%60000)/1000):02}"
+				track_uri = song["uri"]
+				track_popularity = song["popularity"]
+				track_artist = song["artists"][0]["name"]
+
+				recommend_track_info = {
+					'track_id': track_id,
+					'track_name': track_name,
+					'track_coverArt': track_coverArt,
+					'track_duration': track_duration_mn,
+					'track_uri': track_uri[14:],
+					'track_popularity': track_popularity,
+					'track_artist': track_artist
+				}
+
+				recommend_songs_list.append(recommend_track_info)
+
+			print(recommend_songs_list)
+		data = {
+			'playlist_id': playlist.playlist_id,
+			'playlist_name': playlist.playlist_name,
+			'playlist_description': playlist.playlist_description,
+			'playlist_image_url': playlist.playlist_image_url,
+			'playlist_tracks': playlist_tracks,
+			'recommend_songs': recommend_songs_list
+		}
+		return render(request, 'playlist.html', data)
+
+def add_song(request, pk):
+	playlist_id = pk
+	if request.method == 'POST':
+		track_id = request.POST.get('track_id')
+		print(track_id)
+		user = request.user
+		if user.is_authenticated:
+			user = CustomUser.objects.get(user=user)
+			playlist = get_object_or_404(user_playlist, playlist_id=playlist_id)
+			if track_id not in playlist.playlist_tracks_ids:
+				playlist.playlist_tracks_ids.append(track_id)
+				print(playlist.playlist_tracks_ids)
+				playlist.save()
+		return HttpResponseRedirect(reverse('playlist', args=[str(playlist_id)]))
+
+def remove_song(request, pk):
+	playlist_id = pk
+	if request.method == 'POST':
+		track_id = request.POST.get('track_id')
+		user = request.user
+		if user.is_authenticated:
+			user = CustomUser.objects.get(user=user)
+			playlist = get_object_or_404(user_playlist, playlist_id=playlist_id)
+			if track_id in playlist.playlist_tracks_ids:
+				playlist.playlist_tracks_ids.remove(track_id)
+				playlist.save()
+		return HttpResponseRedirect(reverse('playlist', args=[str(playlist_id)]))
 
 def top_tracks():
 	url = "https://api.spotify.com/v1/playlists"
@@ -283,12 +479,14 @@ def search(request):
 				track_duration = track["duration_ms"]
 				track_uri = track["uri"]
 				track_artist = track["artists"][0]["name"]
+				track_popularity = track["popularity"]
 				data.append({
 					'track_name': track_name,
 					'track_coverArt': track_coverArt,
-					'track_duration': float(track_duration)//60000,
+					'track_duration': f"{int(track_duration)//60000:02}" + ":" + f"{math.ceil((float(track_duration)%60000)/1000):02}",
 					'track_uri': track_uri[14:],
-					'track_artist': track_artist
+					'track_artist': track_artist,
+					'track_popularity': track_popularity
 				})
 			context = {  # Giả sử kết quả tìm kiếm của bạn
 				'data': data,
@@ -302,6 +500,55 @@ def search(request):
 			return render(request, 'search.html')
 	else:
 		return render(request, 'search.html')
+
+def search_song(request):
+	if request.method == 'POST':
+		query = request.POST.get('search_query')
+
+		url = "https://api.spotify.com/v1/search"
+
+		querystring = "?q="+query+"&type=track&market=VN&limit=10"
+		query_url = url + querystring
+
+		headers = getAuthHeader()
+
+		response = requests.get(query_url, headers=headers)
+
+		if response.status_code == 200:
+			tracks = response.json()["tracks"]["items"] 
+			data = []
+			for track in tracks:
+				track_id = track["id"]
+				track_name = track["name"]
+				track_coverArt = track["album"]["images"][0]["url"] if len(track["album"]["images"]) > 0 else None
+				track_duration = track["duration_ms"]
+				track_uri = track["uri"]
+				track_artist = track["artists"][0]["name"]
+				track_popularity = track["popularity"]
+				data.append({
+					'track_id': track_id,
+					'track_name': track_name,
+					'track_coverArt': track_coverArt,
+					'track_duration': f"{int(track_duration)//60000:02}" + ":" + f"{math.ceil((float(track_duration)%60000)/1000):02}",
+					'track_uri': track_uri[14:],
+					'track_artist': track_artist,
+					'track_popularity': track_popularity
+				})
+			context = {  # Giả sử kết quả tìm kiếm của bạn
+				'data': data,
+				'query': query,
+				'response':response.json(),
+				'totalCount': response.json()["tracks"]["total"]
+			}
+
+			print(data)
+			return JsonResponse(context)
+		else:
+			print('Không thể tìm thấy bài hát !')
+			return JsonResponse({'error': 'Không thể tìm thấy bài hát !'})
+	else:
+		print('Không thể tìm thấy bài hát1 !')
+		return JsonResponse({'error': 'Không thể tìm thấy bài hát !'})
 
 @login_required(login_url='/login')
 # Create your views here.
@@ -322,11 +569,21 @@ def index(request):
 	if artist_info is None:
 		django_messages.info(request, 'Không thể lấy thông tin nghệ sĩ !')
 
+	playlist_content = []
+
+	user = request.user
+	if user.is_authenticated:
+		user = CustomUser.objects.get(user=user)
+		if user_playlist.objects.filter(user=user).exists():
+			playlist_content = user_playlist.objects.filter(user=user)
+		else:
+			playlist_content = None
 	data = {
 		'artist_info': artist_info,
 		'first_top_tracks_section': first_top_tracks_section,
 		'second_top_tracks_section': second_top_tracks_section,
-		'third_top_tracks_section': third_top_tracks_section
+		'third_top_tracks_section': third_top_tracks_section,
+		'playlist_content': playlist_content
 	}
 	return render(request, 'index.html', data)
 
@@ -578,4 +835,6 @@ def hybird_recommend_for_list_of_tracks(list_of_tracks, num_recommendations=5, a
 	combined_recommendations = pd.concat(hybrid_recommendations).drop_duplicates(subset='track_id').reset_index(drop=True)
 	combined_recommendations = combined_recommendations.sort_values('hybrid_score', ascending=False).head(num_recommendations)
 
-	return combined_recommendations
+	finale_recommendations = combined_recommendations[['track_id']]
+
+	return finale_recommendations

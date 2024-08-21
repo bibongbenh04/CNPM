@@ -77,3 +77,24 @@ class UserHistory(models.Model):
     def __str__(self):
         return f"{self.user.user.username} played {self.track_id} at {self.played_at}"
     
+class user_playlist(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    playlist_name = models.CharField(max_length=255)
+    playlist_id = models.CharField(max_length=255, unique=True)
+    playlist_description = models.TextField()
+    playlist_image_url = models.CharField(max_length=255)
+    playlist_tracks_ids = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.playlist_id :
+            self.playlist_id  = generate_user_id()
+        super(user_playlist, self).save(*args, **kwargs)
+
+    def add_track(self, track_id):
+        self.playlist_tracks_ids.extend(track_id)
+        self.playlist_tracks_ids = list(set(self.playlist_tracks_ids))
+        self.save()
+
+    def __str__(self):
+        return f"{self.user.user.username} created {self.playlist_name} at {self.created_at}"

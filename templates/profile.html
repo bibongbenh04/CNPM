@@ -182,10 +182,14 @@
       </div>
       
       <div class="sidebar-section">
-          <a href="#" class="sidebar-link">
-              <span class="sidebar-link-icon"><i class="fa-solid fa-heart"></i></span>
-              Liked Songs
-          </a>
+        <a href="/liked_song/{{user.customuser.id}}" class="sidebar-link">
+          <span class="sidebar-link-icon"><i class="fa-solid fa-heart"></i></span>
+          Liked Songs
+        </a>
+        <a href="/history/{{user.customuser.id}}" class="sidebar-link" style="white-space: nowrap;">
+          <span class="sidebar-link-icon" ><i class="fa-solid fa-book"></i></span>
+          Listening History
+        </a>
       </div>
   </div>
 

@@ -1,161 +1,331 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Music Streaming Service</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+      integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      .playlist_content {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        max-height: 150px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 10px;
+      }
+      .playlist_content a {
+        display: flex;
+        flex-direction: flex-start;
+        align-items: center;
+        text-decoration: none;
+        color: #fff;
+        margin: 10px;
+      }
+      .playlist_content a img {
+        width: 50px;
+        height: 50px;
+        border-radius: 20%;
+        margin-right: 10px;
+      }
+    </style>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Music Streaming Service</title>
-  <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-</head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background: #121212;
+      font-family: Arial, sans-serif;
+      color: #fff;
+    "
+  >
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <!-- Spotify Logo -->
+        <img
+          src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png"
+          alt="Spotify Logo"
+          style="
+            width: 100%;
+            height: auto;
+            padding: 20px;
+            box-sizing: border-box;
+          "
+        />
 
-<body style="margin:0; padding:0; background:#121212; font-family:Arial, sans-serif; color:#fff;">
-  
-  <div class="sidebar">
+        <a href="#" class="sidebar-link active">
+          <span class="sidebar-link-icon"
+            ><i class="fa-solid fa-house"></i
+          ></span>
+          Home
+        </a>
+        <a href="search/" class="sidebar-link">
+          <span class="sidebar-link-icon"
+            ><i class="fa-solid fa-magnifying-glass"></i
+          ></span>
+          Search
+        </a>
+      </div>
 
-    <div class="sidebar-section">
-      <!-- Spotify Logo -->
-      <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png" alt="Spotify Logo"
-        style="width: 100%; height: auto; padding: 20px; box-sizing: border-box;">
+      <!-- Bottom section of the sidebar -->
+      <div class="sidebar-section">
+        <div class="sidebar-title" style="display: flex; align-items: center">
+          <a href="#" class="sidebar-link">
+            <span class="sidebar-link-icon"
+              ><i class="fa-solid fa-book"></i
+            ></span>
+            Your Library
+          </a>
+          <button
+            class="sidebar-link"
+            onclick="createPlaylist()"
+            style="
+              background-color: transparent;
+              border: none;
+              margin-top: 10px;
+            "
+          >
+            <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
 
-      <a href="#" class="sidebar-link active">
-        <span class="sidebar-link-icon"><i class="fa-solid fa-house"></i></span>
-        Home
-      </a>
-      <a href="search/" class="sidebar-link">
-        <span class="sidebar-link-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
-        Search
-      </a>
-    </div>
+        <div class="create-playlist">
+          {% if playlist_content != None %}
+          <div class="playlist_content">
+            {% for playlist in playlist_content %}
+            <a href="/playlist/{{playlist.playlist_id}}" class="sidebar-link">
+              <img
+                src="{{playlist.playlist_image_url}}"
+                alt="{{playlist.playlist_name}}"
+              />
+              <h4>{{playlist.playlist_name}}</h4>
+            </a>
+            {% endfor %}
+          </div>
 
-    <!-- Bottom section of the sidebar -->
-    <div class="sidebar-section">
-      <a href="#" class="sidebar-link">
-        <span class="sidebar-link-icon"><i class="fa-solid fa-book"></i></span>
-        Your Library
-      </a>
-      <div class="create-playlist">
-        <h4>Create your first playlist</h4>
-        <p>It easy we will help you</p>
-        <button type="button">Create playlist</button>
+          {% else %}
+          <h4>Create your first playlist</h4>
+          <p>It easy we will help you</p>
+          <button onclick="createPlaylist()">Create playlist</button>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <a href="/liked_song/{{user.customuser.id}}" class="sidebar-link">
+          <span class="sidebar-link-icon"
+            ><i class="fa-solid fa-heart"></i
+          ></span>
+          Liked Songs
+        </a>
+        <a
+          href="/history/{{user.customuser.id}}"
+          class="sidebar-link"
+          style="white-space: nowrap"
+        >
+          <span class="sidebar-link-icon"
+            ><i class="fa-solid fa-book"></i
+          ></span>
+          Listening History
+        </a>
       </div>
     </div>
 
-    <div class="sidebar-section">
-      <a href="#" class="sidebar-link">
-        <span class="sidebar-link-icon"><i class="fa-solid fa-heart"></i></span>
-        Liked Songs
-      </a>
-    </div>
-  </div>
+    <div style="margin-left: 240px; padding: 20px">
+      <header class="header-container">
+        <div class="head-nav">
+          <form action="{% url 'search' %}" method="POST">
+            {% csrf_token %}
+            <div class="search-bar" style="width: 390px">
+              <input
+                type="search"
+                name="search_query"
+                placeholder="What do you want to listen to?"
+                aria-label="Search"
+              />
+              <button type="submit" aria-label="Search">🔍</button>
+            </div>
+          </form>
 
-
-  <div style="margin-left:240px; padding:20px;">
-    <header class="header-container">
-      <div class="head-nav">
-        <form action="{% url 'search' %}" method="POST">
-          {% csrf_token %}
-          <div class="search-bar" style="width: 390px;">
-            <input type="search" name="search_query" placeholder="What do you want to listen to?" aria-label="Search" >
-            <button type="submit" aria-label="Search">
-              🔍
-            </button>  
-          </div>
-        </form>
-
-        <div class="login-button">
-            <div class="user-nav" style="position: relative; right: 80px; display: inline-block;">
-              <b style="position: absolute; top: 27px; right: 60px; transform: translateY(-50%); white-space: nowrap;">Welcome, {{user.username}}</b>
-              <img src="{{user.customuser.avatar.url}}" alt="User" style="float: right; width: 50px; height: 50px; border-radius: 50%;" onclick="toggleLogoutBox()">
-              <div id="logout-box" style="display: none; position: absolute; top: 60px; right: 0; background-color: rgb(46, 45, 45); padding: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 10px; width: 150px;">
-                <a href="{% url 'logout' %}" style="text-decoration: none; color: white; font-size: 16px; font-weight: 300; white-space: nowrap; ">Log out</a>
+          <div class="login-button">
+            <div
+              class="user-nav"
+              style="position: relative; right: 80px; display: inline-block"
+            >
+              <b
+                style="
+                  position: absolute;
+                  top: 27px;
+                  right: 60px;
+                  transform: translateY(-50%);
+                  white-space: nowrap;
+                "
+                >Welcome, {{user.username}}</b
+              >
+              <img
+                src="{{user.customuser.avatar.url}}"
+                alt="User"
+                style="
+                  float: right;
+                  width: 50px;
+                  height: 50px;
+                  border-radius: 50%;
+                "
+                onclick="toggleLogoutBox()"
+              />
+              <div
+                id="logout-box"
+                style="
+                  display: none;
+                  position: absolute;
+                  top: 60px;
+                  right: 0;
+                  background-color: rgb(46, 45, 45);
+                  padding: 10px;
+                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                  border-radius: 10px;
+                  width: 150px;
+                "
+              >
+                <a
+                  href="{% url 'logout' %}"
+                  style="
+                    text-decoration: none;
+                    color: white;
+                    font-size: 16px;
+                    font-weight: 300;
+                    white-space: nowrap;
+                  "
+                  >Log out</a
+                >
               </div>
             </div>
+          </div>
         </div>
-      </div> 
-    </header>
+      </header>
 
-    <div class="search-title">Top Artists</div>
+      <div class="search-title">Top Artists</div>
 
-    <main style="padding-top:20px;">
-      <section style=" margin-top:0px; padding:0px; overflow-x:auto; white-space:nowrap; position: relative;">
-        <!-- Artist Card -->
-       {% for artist in artist_info %}
-        <div class="artist-card">
-          <a href="/profile/{{artist.artist_id}}" style="text-decoration: none;">
-            <img src="{{artist.artist_coverArt}}" alt="{{artist.artist_name}}"
-              style="width:150px; height:150px; border-radius:50%;">
-            <div class="artist-info">
-              <div class="artist-name">{{artist.artist_name}}</div>
-              <div class="artist-title">Artist</div>
-            </div>
-          </a>
+      <main style="padding-top: 20px">
+        <section
+          style="
+            margin-top: 0px;
+            padding: 0px;
+            overflow-x: auto;
+            white-space: nowrap;
+            position: relative;
+          "
+        >
+          <!-- Artist Card -->
+          {% for artist in artist_info %}
+          <div class="artist-card">
+            <a
+              href="/profile/{{artist.artist_id}}"
+              style="text-decoration: none"
+            >
+              <img
+                src="{{artist.artist_coverArt}}"
+                alt="{{artist.artist_name}}"
+                style="width: 150px; height: 150px; border-radius: 50%"
+              />
+              <div class="artist-info">
+                <div class="artist-name">{{artist.artist_name}}</div>
+                <div class="artist-title">Artist</div>
+              </div>
+            </a>
+          </div>
+          {% endfor %}
+        </section>
+        <!-- Repeat sections for other categories with more content cards -->
+
+        <!-- "Browse All" Section Title -->
+        <div class="search-title">Top Songs</div>
+
+        <!-- "Browse All" Section Content -->
+
+        <div class="browse-all">
+          <!-- Category Card -->
+          {% for track in first_top_tracks_section %}
+          <div class="category-card">
+            <a
+              href="/music/{{track.track_id}}"
+              style="text-decoration: none; color: #fff"
+            >
+              <img src="{{track.track_coverArt}}" alt="{{track.track_name}}" />
+              <div class="category-title">{{track.track_name}}</div>
+            </a>
+          </div>
+          {% endfor %}
         </div>
-        {% endfor %}
-      </section>
-      <!-- Repeat sections for other categories with more content cards -->
 
-      <!-- "Browse All" Section Title -->
-      <div class="search-title">Top Songs</div>
-
-      <!-- "Browse All" Section Content -->
-
-
-      <div class="browse-all">
-        <!-- Category Card -->
-        {% for track in first_top_tracks_section %}
-        <div class="category-card">
-          <a href="/music/{{track.track_id}}" style="text-decoration: none; color: #fff;">
-            <img src="{{track.track_coverArt}}" alt="{{track.track_name}}">
-            <div class="category-title">{{track.track_name}}</div>
-          </a>
+        <div class="browse-all">
+          <!-- Category Card -->
+          {% for track in second_top_tracks_section %}
+          <div class="category-card">
+            <a
+              href="/music/{{track.track_id}}"
+              style="text-decoration: none; color: #fff"
+            >
+              <img src="{{track.track_coverArt}}" alt="{{track.track_name}}" />
+              <div class="category-title">{{track.track_name}}</div>
+            </a>
+          </div>
+          {% endfor %}
         </div>
-        {% endfor %}
-      </div>
 
-      <div class="browse-all">
-        <!-- Category Card -->
-        {% for track in second_top_tracks_section %}
-        <div class="category-card">
-          <a href="/music/{{track.track_id}}" style="text-decoration: none; color: #fff;">
-            <img src="{{track.track_coverArt}}" alt="{{track.track_name}}">
-            <div class="category-title">{{track.track_name}}</div>
-          </a>
+        <div class="browse-all">
+          <!-- Category Card -->
+          {% for track in third_top_tracks_section %}
+          <div class="category-card">
+            <a
+              href="/music/{{track.track_id}}"
+              style="text-decoration: none; color: #fff"
+            >
+              <img src="{{track.track_coverArt}}" alt="{{track.track_name}}" />
+              <div class="category-title">{{track.track_name}}</div>
+            </a>
+          </div>
+          {% endfor %}
         </div>
-        {% endfor %}
-      </div>
-
-      <div class="browse-all">
-        <!-- Category Card -->
-        {% for track in third_top_tracks_section %}
-        <div class="category-card">
-          <a href="/music/{{track.track_id}}" style="text-decoration: none; color: #fff;">
-            <img src="{{track.track_coverArt}}" alt="{{track.track_name}}">
-            <div class="category-title">{{track.track_name}}</div>
-          </a>
-        </div>
-        {% endfor %}
-      </div>
-    </main>
-  </div>
-</body>
-
-<script>
-  function toggleLogoutBox() {
-    var logoutBox = document.getElementById('logout-box');
-    if (logoutBox.style.display === 'none' || logoutBox.style.display === '') {
-        logoutBox.style.display = 'block';
-    } else {
-        logoutBox.style.display = 'none';
+      </main>
+    </div>
+  </body>
+  <script>
+    function toggleLogoutBox() {
+      var logoutBox = document.getElementById("logout-box");
+      if (
+        logoutBox.style.display === "none" ||
+        logoutBox.style.display === ""
+      ) {
+        logoutBox.style.display = "block";
+      } else {
+        logoutBox.style.display = "none";
+      }
     }
-  }
-
-  window.addEventListener('scroll', function() {
-        const musicBar = document.querySelector('.music-bar');
-        const scrollY = window.scrollY || window.pageYOffset;
-        musicBar.style.bottom = `-${scrollY}px`;
-    });
-</script>
-
+    function createPlaylist() {
+      fetch("/create_playlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+      }).then((response) => {
+        if (response.redirected) {
+          window.location.href = response.url;
+        }
+      });
+    }
+  </script>
+  <script src="{% static 'callback.js' %}"></script>
 </html>
