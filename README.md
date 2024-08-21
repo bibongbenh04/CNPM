@@ -3,14 +3,14 @@
 
 <a href="https://bibongbenh.pythonanywhere.com/"> Link Preview </a>
 
-# WebMamXanh
+# CNPM
 </div>
 
 ### Cloning the repository
 
 --> Clone the repository using the command below :
 ```bash
-git clone https://github.com/bibongbenh04/TestWeb.git
+git clone https://github.com/bibongbenh04/CNPM.git
 
 ```
 
