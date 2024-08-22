@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Spotify Playback Test</title>
+    <!-- <script src="https://sdk.scdn.co/spotify-player.js"></script> -->
+    <style>
+        #player {
+            margin: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Spotify Playback Test</h1>
+    <div id="player">
+        <button id="play">Play</button>
+        <button id="pause">Pause</button>
+    </div>
+
+    <script>
+        // Thay thế YOUR_ACCESS_TOKEN bằng token truy cập của bạn
+        const accessToken = 'YOUR_ACCESS_TOKEN';
+
+        window.onSpotifyWebPlaybackSDKReady = () => {
+            const player = new Spotify.Player({
+                name: 'Web Playback SDK Quick Start Player',
+                getOAuthToken: cb => { cb(accessToken); }
+            });
+
+            // Error handling
+            player.addListener('initialization_error', ({ message }) => console.error(message));
+            player.addListener('authentication_error', ({ message }) => console.error(message));
+            player.addListener('account_error', ({ message }) => console.error(message));
+            player.addListener('playback_error', ({ message }) => console.error(message));
+
+            // Playback status updates
+            player.addListener('player_state_changed', state => {
+                console.log(state);
+            });
+
+            // Ready
+            player.addListener('ready', ({ device_id }) => {
+                console.log('Ready with Device ID', device_id);
+
+                // Play a track
+                document.getElementById('play').addEventListener('click', () => {
+                    player.connect().then(success => {
+                        if (success) {
+                            player.togglePlay().then(() => {
+                                console.log('Toggled playback!');
+                            });
+                        }
+                    });
+                });
+
+                // Pause playback
+                document.getElementById('pause').addEventListener('click', () => {
+                    player.togglePlay().then(() => {
+                        console.log('Toggled playback!');
+                    });
+                });
+            });
+
+            // Not Ready
+            player.addListener('not_ready', ({ device_id }) => {
+                console.log('Device has gone offline', device_id);
+            });
+        };
+    </script>
+</body>
+
+</html>
