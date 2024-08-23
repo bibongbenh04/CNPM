@@ -1,52 +1,64 @@
 {% load static%}
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Artist Profile</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'search-style.css' %}" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.4/dist/tailwind.min.css" rel="stylesheet">
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'search-style.css' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+      integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.4/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, Helvetica, sans-serif;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, Helvetica, sans-serif;
+      }
 
-        body {
-            color: #fff;
-            background-color: #353232;
-            display: flex;
-            height: 100vh;
-        }
+      body {
+        color: #fff;
+        background-color: #353232;
+        display: flex;
+        height: 100vh;
+      }
 
-        /* Sidebar Styles */
-        .sidebar {
-            background-color: #000;
-            width: 240px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
+      /* Sidebar Styles */
+      .sidebar {
+        background-color: #000;
+        width: 240px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+      }
 
-        .artist-header {
-            background-image: url('https://cdn.punchng.com/wp-content/uploads/2023/05/20120536/Rema.jpeg');
-            background-size: cover;
-            background-position: center;
-            height: 60vh;
-        }
-        /* Sidebar */
-        .sidebar {
+      .artist-header {
+        background-image: url("https://cdn.punchng.com/wp-content/uploads/2023/05/20120536/Rema.jpeg");
+        background-size: cover;
+        background-position: center;
+        height: 60vh;
+      }
+      /* Sidebar */
+      .sidebar {
         color: #b3b3b3;
         padding: 25px 8px;
         font-size: 16px;
-        }
+      }
 
-        .sidebar a {
+      .sidebar a {
         text-decoration: none;
         display: block;
         padding: 5px 15px;
@@ -55,240 +67,392 @@
         transition: background-color 0.3s ease;
         color: #b3b3b3;
         font-weight: 600;
-        }
+      }
 
-        .create-playlist {
+      .create-playlist {
         background: #302f2f;
         padding: 30px 15px;
         border-radius: 10px;
         margin-bottom: 10px;
-        }   
+      }
 
-        .create-playlist h4
-        {
-            color: #fff;
-            font-size: 15px;
-            font-weight: 600;
-        }
+      .create-playlist h4 {
+        color: #fff;
+        font-size: 15px;
+        font-weight: 600;
+      }
 
-        .create-playlist p
-        {
-            color: #fff;
-            font-size: 12px;
-            margin: 12px 0;
-        }
+      .create-playlist p {
+        color: #fff;
+        font-size: 12px;
+        margin: 12px 0;
+      }
 
-        .create-playlist button
-        {
-            padding: 8px 20px;
-            border: 0;
-            outline: 0;
-            border-radius: 20px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
+      .create-playlist button {
+        padding: 8px 20px;
+        border: 0;
+        outline: 0;
+        border-radius: 20px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
 
-        .sidebar a:hover,
-        .sidebar a.active {
-            background-color: #282828;
-        }
+      .sidebar a:hover,
+      .sidebar a.active {
+        background-color: #282828;
+      }
 
-        .head-nav {
-            display: flex;
-            align-items: center;
-        }
+      .head-nav {
+        display: flex;
+        align-items: center;
+      }
 
-        .head-nav .login-button{
-            margin-left: 650px;
-        }
+      .head-nav .login-button {
+        margin-left: 650px;
+      }
 
-        .head-nav .login-button button{
-            background: transparent;
-            border: 0px;
-            outline: 0px;
-        }
-        .head-nav .login-button button i{
-            color: #838181;
-            font-size: 22px;
-            margin-right: 10px;
-        }
+      .head-nav .login-button button {
+        background: transparent;
+        border: 0px;
+        outline: 0px;
+      }
+      .head-nav .login-button button i {
+        color: #838181;
+        font-size: 22px;
+        margin-right: 10px;
+      }
 
-        .head-nav .login-button .signup{
-            color: #838181;
-            font-size: 16px;
-            font-weight: 600;
-            margin-right: 15px;
-        }
+      .head-nav .login-button .signup {
+        color: #838181;
+        font-size: 16px;
+        font-weight: 600;
+        margin-right: 15px;
+      }
 
-        .head-nav .login-button .signup:hover{
-            color: #fff;
-        }
+      .head-nav .login-button .signup:hover {
+        color: #fff;
+      }
 
-        .head-nav .login-button .login{
-            color: #242323;
-            font-size: 16px;
-            font-weight: 600;
-            background: #fff;
-            padding: 6px 10px;
-            border-radius: 20px;
-        }
+      .head-nav .login-button .login {
+        color: #242323;
+        font-size: 16px;
+        font-weight: 600;
+        background: #fff;
+        padding: 6px 10px;
+        border-radius: 20px;
+      }
 
-        .head-nav .login-button .login:hover{
-            background: #f3f3f3;
-        }
+      .head-nav .login-button .login:hover {
+        background: #f3f3f3;
+      }
 
+      /* Sidebar Bottom Section Styles */
+      .sidebar-section {
+        background: #181818;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 9px;
+        overflow: hidden;
+      }
 
-        /* Sidebar Bottom Section Styles */
-        .sidebar-section {
-            background: #181818;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 9px;
-            overflow: hidden;
-        }
-
-        .search_song_result {
-            padding: 20px;
-            background-color: #000000;
-            border-radius: 10px;
-            font-size: 24px;
-            font-weight: 600;
-            margin-top: -30px;
-        }
-        .searched_song {
-            max-width: 100%;
-        }
-        .searched_song a {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 5px;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-        .searched_song a:hover {
-            background-color: #282828;
-            transform: scale(1.02);
-        }
+      .search_song_result {
+        padding: 20px;
+        background-color: #000000;
+        border-radius: 10px;
+        font-size: 24px;
+        font-weight: 600;
+        margin-top: -30px;
+      }
+      .searched_song {
+        max-width: 100%;
+      }
+      .searched_song a {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        padding: 10px;
+        margin-top: 10px;
+        border-radius: 5px;
+        transition: background-color 0.3s, transform 0.2s;
+      }
+      .searched_song a:hover {
+        background-color: #282828;
+        transform: scale(1.02);
+      }
+      .playlist_content {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        max-height: 150px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 10px;
+      }
+      .playlist_content a {
+        display: flex;
+        flex-direction: flex-start;
+        align-items: center;
+        text-decoration: none;
+        color: #fff;
+        margin: 10px;
+      }
+      .playlist_content a img {
+        width: 50px;
+        height: 50px;
+        border-radius: 20%;
+        margin-right: 10px;
+      }
     </style>
-</head>
+  </head>
 
-<body class="bg-black text-white flex">
-
+  <body class="bg-black text-white flex">
     <!-- Sidebar -->
     <div class="sidebar">
-        <!-- Top section of the sidebar -->
-        <div class="sidebar-section">
-          <!-- Spotify Logo -->
-            <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png" alt="Spotify Logo"
-                style="width: 100%; height: auto; padding: 20px; box-sizing: border-box;">
-        
-            <a href="/" class="sidebar-link">
-                <span class="sidebar-link-icon"><i class="fa-solid fa-house"></i></span>
-                Home
-            </a>
-            <a href="#" class="sidebar-link active">
-                <span class="sidebar-link-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
-                Search
-            </a>
+      <!-- Top section of the sidebar -->
+      <div class="sidebar-section">
+        <!-- Spotify Logo -->
+        <img
+          src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png"
+          alt="Spotify Logo"
+          style="
+            width: 100%;
+            height: auto;
+            padding: 20px;
+            box-sizing: border-box;
+          "
+        />
+
+        <a href="/" class="sidebar-link">
+          <span class="sidebar-link-icon"
+            ><i class="fa-solid fa-house"></i
+          ></span>
+          Home
+        </a>
+        <a href="#" class="sidebar-link active">
+          <span class="sidebar-link-icon"
+            ><i class="fa-solid fa-magnifying-glass"></i
+          ></span>
+          Search
+        </a>
+      </div>
+
+      <!-- Bottom section of the sidebar -->
+      <div class="create-playlist">
+        {% if playlist_content != None %}
+        <div class="playlist_content">
+          {% for playlist in playlist_content %}
+          <a href="/playlist/{{playlist.playlist_id}}" class="sidebar-link">
+            <img
+              src="{{playlist.playlist_image.url}}"
+              alt="{{playlist.playlist_name}}"
+            />
+            <h4>{{playlist.playlist_name}}</h4>
+          </a>
+          {% endfor %}
         </div>
-        
-        <!-- Bottom section of the sidebar -->
-        <div class="sidebar-section">
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-link-icon"><i class="fa-solid fa-book"></i></span>
-                Your Library
-            </a>
-            <div class="create-playlist">
-                <h4>Create your first playlist</h4>
-                <p>It easy we will help you</p>
-                <button type="button" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-full text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">Create Playlist</button>
-            </div>
-        </div>
-        
-        <div class="sidebar-section">
-            <a href="/liked_song/{{user.customuser.id}}" class="sidebar-link active">
-              <span class="sidebar-link-icon"><i class="fa-solid fa-heart"></i></span>
-              Liked Songs
-            </a>
-            <a href="/history/{{user.customuser.id}}" class="sidebar-link" style="white-space: nowrap;">
-              <span class="sidebar-link-icon" ><i class="fa-solid fa-book"></i></span>
-              Listening History
-            </a>
-          </div>
+
+        {% else %}
+        <h4>Create your first playlist</h4>
+        <p>It easy we will help you</p>
+        <button onclick="createPlaylist()">Create playlist</button>
+        {% endif %}
+      </div>
+
+      <div class="sidebar-section">
+        <a
+          href="/liked_song/{{user.customuser.id}}"
+          class="sidebar-link active"
+        >
+          <span class="sidebar-link-icon"
+            ><i class="fa-solid fa-heart"></i
+          ></span>
+          Liked Songs
+        </a>
+        <a
+          href="/history/{{user.customuser.id}}"
+          class="sidebar-link"
+          style="white-space: nowrap"
+        >
+          <span class="sidebar-link-icon"
+            ><i class="fa-solid fa-book"></i
+          ></span>
+          Listening History
+        </a>
+      </div>
     </div>
 
     <!-- Main Content -->
     <div class="flex-1">
+      <br />
+      <br />
+      <header class="header-container">
+        <div class="head-nav">
+          <form action="{% url 'search' %}" method="POST">
+            {% csrf_token %}
+            <div class="search-bar" style="width: 390px">
+              <input
+                type="search"
+                name="search_query"
+                placeholder="What do you want to listen to?"
+                aria-label="Search"
+              />
+              <button type="submit" aria-label="Search">🔍</button>
+            </div>
+          </form>
 
-        <br>
-        <br>
-        <header class="header-container">
-            <div class="head-nav">
-              <form action="{% url 'search' %}" method="POST">
-                {% csrf_token %}
-                <div class="search-bar" style="width: 390px;">
-                  <input type="search" name="search_query" placeholder="What do you want to listen to?" aria-label="Search" >
-                  <button type="submit" aria-label="Search">
-                    🔍
-                  </button>  
-                </div>
-              </form>
-      
-              <div class="login-button">
-                {% if user.is_authenticated %}
-                  <div class="user-nav" style="position: relative; right: -100px; display: inline-block;">
-                    <b style="position: absolute; top: 27px; right: 60px; transform: translateY(-50%); white-space: nowrap;">Welcome, {{user.username}}</b>
-                    <img src="{{user.customuser.avatar.url}}" alt="User" style="float: right; width: 50px; height: 50px; border-radius: 50%;" onclick="toggleLogoutBox()">
-                    <div id="logout-box" style="display: none; position: absolute; top: 60px; right: 0; background-color: rgb(46, 45, 45); padding: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 10px; width: 150px;">
-                      <a href="{% url 'logout' %}" style="text-decoration: none; color: white; font-size: 16px; font-weight: 300; white-space: nowrap; ">Log out</a>
-                    </div>
-                  </div>
-                {% else %}
-                  <a href="signup">
-                    <button type="button" class="signup">Sign Up</button>
-                  </a>
-                  <a href="login">
-                    <button type="button" class="login">Login</button>
-                  </a>
-                {% endif %}
+          <div class="login-button">
+            {% if user.is_authenticated %}
+            <div
+              class="user-nav"
+              style="position: relative; right: -100px; display: inline-block"
+            >
+              <b
+                style="
+                  position: absolute;
+                  top: 27px;
+                  right: 60px;
+                  transform: translateY(-50%);
+                  white-space: nowrap;
+                "
+                >Welcome, {{user.username}}</b
+              >
+              <img
+                src="{{user.customuser.avatar.url}}"
+                alt="User"
+                style="
+                  float: right;
+                  width: 50px;
+                  height: 50px;
+                  border-radius: 50%;
+                "
+                onclick="toggleLogoutBox()"
+              />
+              <div
+                id="logout-box"
+                style="
+                  display: none;
+                  position: absolute;
+                  top: 60px;
+                  right: 0;
+                  background-color: rgb(46, 45, 45);
+                  padding: 10px;
+                  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                  border-radius: 10px;
+                  width: 150px;
+                "
+              >
+                <a
+                  href="{% url 'logout' %}"
+                  style="
+                    text-decoration: none;
+                    color: white;
+                    font-size: 16px;
+                    font-weight: 300;
+                    white-space: nowrap;
+                  "
+                  >Log out</a
+                >
               </div>
-              
             </div>
-          
-          </header>
-
-        <!-- Popular Tracks Section -->
-        <div class="p-5">
-            <br>
-            <h2 class="text-2xl font-bold mb-4">Liked Song</h2>
-            <div class="search_song_result">
-                <!-- Single Track Row -->
-                <div class="searched_song">
-                    {% if data|length == 0 %}
-                        <h3>No liked songs found</h3>
-                    {% else %}
-                        {% for song in data %}
-                        <a href="/music/{{song.track_uri}}" style="text-decoration: none; display: flex; align-content: center; margin-top: 20px;">
-                            <img src="{{song.track_coverArt}}" alt="Album Cover" style="width: 50px; height: 50px; border-radius: 5px; margin-right: 10px;">
-                            <div class="song-details" style="flex-grow: 1;">
-                            <h4 class="song" style="margin: 0; color: #fff;">{{song.track_name}}</h4>
-                            <h4 class="song" style="margin: 0; color: #bbb;">{{song.track_artist}}</h4>
-                            </div>
-                            <h4 class="play-count" style="margin-right: 200px; color: #ccc; min-width: 90px; font-size: 17px; margin-top: 10px; font-weight: 400;">{{ song.track_popularity }}</h4>
-                            <h4 class="duration" style="margin-left: 10px; color: #ccc; min-width: 50px; font-size: 17px; margin-top: 10px; font-weight: 400;">{{ song.track_duration }}</h4>
-                        </a>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-                <!-- Repeat for other tracks -->
-            </div>
-            <!-- <a href="#" class="text-green-500 text-sm">See more</a> -->
+            {% else %}
+            <a href="signup">
+              <button type="button" class="signup">Sign Up</button>
+            </a>
+            <a href="login">
+              <button type="button" class="login">Login</button>
+            </a>
+            {% endif %}
+          </div>
         </div>
+      </header>
 
+      <!-- Popular Tracks Section -->
+      <div class="p-5">
+        <br />
+        <h2 class="text-2xl font-bold mb-4">Liked Song</h2>
+        <div class="search_song_result">
+          <!-- Single Track Row -->
+          <div class="searched_song">
+            {% if data|length == 0 %}
+            <h3>No liked songs found</h3>
+            {% else %} {% for song in data %}
+            <a
+              href="/music/{{song.track_uri}}"
+              style="
+                text-decoration: none;
+                display: flex;
+                align-content: center;
+                margin-top: 20px;
+              "
+            >
+              <img
+                src="{{song.track_coverArt}}"
+                alt="Album Cover"
+                style="
+                  width: 50px;
+                  height: 50px;
+                  border-radius: 5px;
+                  margin-right: 10px;
+                "
+              />
+              <div class="song-details" style="flex-grow: 1">
+                <h4 class="song" style="margin: 0; color: #fff">
+                  {{song.track_name}}
+                </h4>
+                <h4 class="song" style="margin: 0; color: #bbb">
+                  {{song.track_artist}}
+                </h4>
+              </div>
+              <h4
+                class="play-count"
+                style="
+                  margin-right: 200px;
+                  color: #ccc;
+                  min-width: 90px;
+                  font-size: 17px;
+                  margin-top: 10px;
+                  font-weight: 400;
+                "
+              >
+                {{ song.track_popularity }}
+              </h4>
+              <h4
+                class="duration"
+                style="
+                  margin-left: 10px;
+                  color: #ccc;
+                  min-width: 50px;
+                  font-size: 17px;
+                  margin-top: 10px;
+                  font-weight: 400;
+                "
+              >
+                {{ song.track_duration }}
+              </h4>
+            </a>
+            {% endfor %} {% endif %}
+          </div>
+          <!-- Repeat for other tracks -->
+        </div>
+        <!-- <a href="#" class="text-green-500 text-sm">See more</a> -->
+      </div>
     </div>
+  </body>
 
-</body>
-
+  <script>
+    function createPlaylist() {
+      fetch("/create_playlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+      }).then((response) => {
+        if (response.redirected) {
+          window.location.href = response.url;
+        }
+      });
+    }
+  </script>
 </html>

@@ -82,7 +82,7 @@ class user_playlist(models.Model):
     playlist_name = models.CharField(max_length=255)
     playlist_id = models.CharField(max_length=255, unique=True)
     playlist_description = models.TextField()
-    playlist_image_url = models.CharField(max_length=255)
+    playlist_image = models.ImageField(upload_to='user/', default='user/default_avatar.jpg')
     playlist_tracks_ids = models.JSONField(default=list)
     created_at = models.DateTimeField(auto_now_add=True)
 

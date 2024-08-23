@@ -125,7 +125,16 @@ def music(request, pk):
 		liked = UserLikedSongs.objects.filter(user=user, track_id=track_id).exists()
 		SaveUserHistory(user, track_id, track_name, track_artist, track_popularity, track_duration, track_coverArt)
 
-	print(liked)
+	playlist_content = []
+
+	user = request.user
+	if user.is_authenticated:
+		user = CustomUser.objects.get(user=user)
+		print(user.avatar)
+		if user_playlist.objects.filter(user=user).exists():
+			playlist_content = user_playlist.objects.filter(user=user)
+		else:
+			playlist_content = None
 
 	url_artist = "https://api.spotify.com/v1/artists"
 	querystring_artist = url_artist+"/"+track_artist_id
@@ -145,7 +154,8 @@ def music(request, pk):
 		'track_popularity': track_popularity,
 		'track_album_release_date': track_release_date,
 		'artist_image': artist_image,
-		'liked': liked
+		'liked': liked,
+		'playlist_content': playlist_content
 	}
 
 	recommend_songs_list = hybird_recommendation(track_info,num_recommendations=5)
@@ -183,6 +193,17 @@ def history(request, pk):
 	user = get_object_or_404(CustomUser, id=user_id)
 	history = UserHistory.objects.filter(user=user).order_by('-played_at')
 	data = []
+	playlist_content = []
+
+	user = request.user
+	if user.is_authenticated:
+		user = CustomUser.objects.get(user=user)
+		print(user.avatar)
+		if user_playlist.objects.filter(user=user).exists():
+			playlist_content = user_playlist.objects.filter(user=user)
+		else:
+			playlist_content = None
+
 	for track in history:
 		track_name = track.track_name
 		track_coverArt = track.track_cover_art_url
@@ -198,13 +219,29 @@ def history(request, pk):
 			'track_artist': track_artist,
 			'track_popularity': track_popularity,
 		})
-	return render(request, 'history.html', {'data': data})
+	context = {
+		'data': data,
+		'playlist_content': playlist_content
+	}
+	return render(request, 'history.html', context)
 
 def liked(request, pk):
 	user_id = pk
 	user = get_object_or_404(CustomUser, id=user_id)
 	history = UserLikedSongs.objects.filter(user=user).order_by('-liked_at')
 	data = []
+
+	playlist_content = []
+
+	user = request.user
+	if user.is_authenticated:
+		user = CustomUser.objects.get(user=user)
+		print(user.avatar)
+		if user_playlist.objects.filter(user=user).exists():
+			playlist_content = user_playlist.objects.filter(user=user)
+		else:
+			playlist_content = None
+
 	for track in history:
 		track_name = track.track_name
 		track_coverArt = track.track_cover_art_url
@@ -220,7 +257,11 @@ def liked(request, pk):
 			'track_artist': track_artist,
 			'track_popularity': track_popularity,
 		})
-	return render(request, 'liked_song.html', {'data': data})
+	context = {
+		'data': data,
+		'playlist_content': playlist_content
+	}
+	return render(request, 'liked_song.html', context)
 
 def liked_song_process(request, pk):
 	if request.method == 'POST':
@@ -258,7 +299,6 @@ def create_playlist(request):
 				playlist.save()
 		return redirect('playlist', pk=playlist.playlist_id)
 	
-
 def playlist(request, pk):
 	playlist_id = pk
 	user = request.user
@@ -271,8 +311,6 @@ def playlist(request, pk):
 		if playlist.playlist_tracks_ids != None and len(playlist.playlist_tracks_ids) > 0:
 			for track_id in playlist.playlist_tracks_ids:
 				query_track_ids = ",".join(playlist.playlist_tracks_ids)
-			print(playlist.playlist_tracks_ids)
-			print(query_track_ids)
 			query_url = url + "?market=VN&ids=" + query_track_ids
 			response = requests.get(query_url, headers=header)
 			data = response.json()
@@ -333,14 +371,23 @@ def playlist(request, pk):
 
 				recommend_songs_list.append(recommend_track_info)
 
-			print(recommend_songs_list)
+		user = request.user
+		if user.is_authenticated:
+			user = CustomUser.objects.get(user=user)
+			print(user.avatar)
+			if user_playlist.objects.filter(user=user).exists():
+				playlist_content = user_playlist.objects.filter(user=user)
+			else:
+				playlist_content = None
+
 		data = {
 			'playlist_id': playlist.playlist_id,
 			'playlist_name': playlist.playlist_name,
 			'playlist_description': playlist.playlist_description,
-			'playlist_image_url': playlist.playlist_image_url,
+			'playlist_image': playlist.playlist_image,
 			'playlist_tracks': playlist_tracks,
-			'recommend_songs': recommend_songs_list
+			'recommend_songs': recommend_songs_list,
+			'playlist_content': playlist_content
 		}
 		return render(request, 'playlist.html', data)
 
@@ -370,6 +417,26 @@ def remove_song(request, pk):
 			if track_id in playlist.playlist_tracks_ids:
 				playlist.playlist_tracks_ids.remove(track_id)
 				playlist.save()
+		return HttpResponseRedirect(reverse('playlist', args=[str(playlist_id)]))
+	
+def edit_playlist(request, pk):
+	playlist_id = pk
+	if request.method == 'POST':
+		playlist_name = request.POST.get('playlist_name')
+		playlist_description = request.POST.get('playlist_description')
+		playlist_image_url = request.FILES.get('playlist_image')
+		print(playlist_image_url)
+		user = request.user
+		if user.is_authenticated:
+			user = CustomUser.objects.get(user=user)
+			playlist = get_object_or_404(user_playlist, playlist_id=playlist_id)
+			#playlist = user_playlist.objects.filter(user=user, playlist_id=playlist_id).update(playlist_name=playlist_name, playlist_description=playlist_description, playlist_image=playlist_image_url)
+			playlist.playlist_name = playlist_name
+			playlist.playlist_description = playlist_description
+			print(playlist_image_url)
+			if playlist_image_url:
+				playlist.playlist_image = playlist_image_url
+			playlist.save()
 		return HttpResponseRedirect(reverse('playlist', args=[str(playlist_id)]))
 
 def top_tracks():
@@ -416,6 +483,17 @@ def profile(request, pk):
 
 	response2 = requests.get(querystring2, headers=headers)
 
+	playlist_content = []
+
+	user = request.user
+	if user.is_authenticated:
+		user = CustomUser.objects.get(user=user)
+		print(user.avatar)
+		if user_playlist.objects.filter(user=user).exists():
+			playlist_content = user_playlist.objects.filter(user=user)
+		else:
+			playlist_content = None
+
 	if response.status_code == 200 and response2.status_code == 200:
 		data = response.json()
 
@@ -450,7 +528,8 @@ def profile(request, pk):
 			'artist_name': artist_name,
 			'artist_monthlyListeners': artist_monthlyListeners,
 			'artist_image': artist_image,
-			'top_tracks': top_tracks
+			'top_tracks': top_tracks,
+			'playlist_content': playlist_content
 		}
 	else:
 		artist_info = None
@@ -458,6 +537,16 @@ def profile(request, pk):
 	return render(request, 'profile.html', artist_info)
 
 def search(request):
+	playlist_content = []
+
+	user = request.user
+	if user.is_authenticated:
+		user = CustomUser.objects.get(user=user)
+		if user_playlist.objects.filter(user=user).exists():
+			playlist_content = user_playlist.objects.filter(user=user)
+		else:
+			playlist_content = None
+
 	if request.method == 'POST':
 		query = request.POST['search_query']
 
@@ -490,6 +579,7 @@ def search(request):
 				})
 			context = {  # Giả sử kết quả tìm kiếm của bạn
 				'data': data,
+				'playlist_content': playlist_content,
 				'query': query,
 				'response':response.json(),
 				'totalCount': response.json()["tracks"]["total"]
@@ -497,9 +587,11 @@ def search(request):
 
 			return render(request, 'search.html', context)
 		else:
-			return render(request, 'search.html')
+			data = {'playlist_content': playlist_content}
+			return render(request, 'search.html', data)
 	else:
-		return render(request, 'search.html')
+		data = {'playlist_content': playlist_content}
+		return render(request, 'search.html', data)
 
 def search_song(request):
 	if request.method == 'POST':
