@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+<<<<<<< HEAD
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -490,6 +491,429 @@
           </div>
 
           <!--
+=======
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Music Streaming Service</title>
+  <link rel="stylesheet" type="text/css" href="{% static '/style.css' %}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    .content {
+      padding-bottom: 100px;
+      /* Chiều cao của phần tử cố định */
+    }
+
+    .footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #000000;
+      /* Màu nền cho thanh điều khiển */
+      border-top: 1px solid #ccc;
+      /* Viền trên */
+      display: flex;
+      justify-content: center;
+      /* Căn giữa iframe */
+      padding: 10px;
+    }
+
+    iframe {
+      border: none;
+      /* Loại bỏ viền của iframe */
+    }
+
+    .album-cover {
+      width: 200px;
+      height: auto;
+      margin-right: 25px;
+      border-radius: 5px;
+    }
+
+    .song-details {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .song .song-title .artist-name {
+      margin: 0px;
+    }
+
+    .song {
+      margin: 0px;
+      font-size: 14px;
+    }
+
+    .song-title {
+      font-size: 80px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin: 30px 0 30px 0;
+
+    }
+
+    .player-controls {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-top: 20px;
+      margin-right: 30px;
+    }
+
+    .control-btn {
+      background-color: transparent;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      margin: 0 10px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .control-btn-play-btn {
+      background-color: transparent;
+      border: none;
+      border-radius: 50%;
+      width: 65px;
+      height: 65px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background-color 0.3s;
+    }
+
+    .control-btn:hover {
+      background-color: #bbbbbb;
+    }
+
+    .control-btn-play-btn:hover {
+      background-color: #1db954;
+    }
+
+    .progress-container {
+      margin: 0 10px;
+      margin-top: 25px;
+      flex-grow: 2;
+    }
+
+    .progress-container .progress-bar-background {
+      width: 100%;
+      background: #555;
+      border-radius: 5px;
+      height: 8px;
+      position: relative;
+    }
+
+    .progress-container .progress-bar {
+      height: 100%;
+      background: #1db954;
+      border-radius: 5px;
+    }
+
+    .volume-container {
+      display: flex;
+      align-items: center;
+      margin-left: 10px;
+    }
+
+    .volume .volume_icon {
+      margin-right: 10px;
+      /* Space between icon and slider */
+      color: white;
+      /* Icon color */
+      font-size: 18px;
+      /* Icon size */
+    }
+
+    .volume-slider {
+      appearance: none;
+      /* Remove default styling */
+      -webkit-appearance: none;
+      /* Remove default styling */
+      width: 150px;
+      /* Slider width */
+      height: 6px;
+      /* Slider height */
+      background: #555;
+      /* Background color for the track */
+      border-radius: 5px;
+      /* Rounded track */
+      outline: none;
+      /* Remove outline */
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      /* Remove default thumb styling */
+      appearance: none;
+      /* Remove default thumb styling */
+      width: 16px;
+      /* Thumb width */
+      height: 16px;
+      /* Thumb height */
+      background: white;
+      /* Thumb color */
+      border-radius: 50%;
+      /* Round thumb */
+      cursor: pointer;
+      /* Pointer cursor */
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+      /* Optional shadow for depth */
+    }
+
+    .volume-slider::-moz-range-thumb {
+      width: 16px;
+      /* Thumb width */
+      height: 16px;
+      /* Thumb height */
+      background: white;
+      /* Thumb color */
+      border-radius: 50%;
+      /* Round thumb */
+      cursor: pointer;
+      /* Pointer cursor */
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+      /* Optional shadow for depth */
+    }
+
+    .volume-slider::-ms-thumb {
+      width: 16px;
+      /* Thumb width */
+      height: 16px;
+      /* Thumb height */
+      background: white;
+      /* Thumb color */
+      border-radius: 50%;
+      /* Round thumb */
+      cursor: pointer;
+      /* Pointer cursor */
+      box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+      /* Optional shadow for depth */
+    }
+
+    /* Style for the track before the thumb */
+    .volume-slider::-webkit-slider-runnable-track {
+      background: #555;
+      /* Background color for the track */
+      border-radius: 5px;
+      /* Rounded track */
+    }
+
+    .volume-slider::-moz-range-track {
+      background: #555;
+      /* Background color for the track */
+      border-radius: 5px;
+      /* Rounded track */
+    }
+
+    .volume-slider::-ms-track {
+      background: #555;
+      /* Background color for the track */
+      border-radius: 5px;
+      /* Rounded track */
+      height: 6px;
+      /* Track height */
+      border: none;
+      /* Remove border */
+    }
+
+    /* Optional: Hide the default track in Internet Explorer */
+    .volume-slider::-ms-fill-lower {
+      background: #1db954;
+      /* Color for lower track (before thumb) */
+      border-radius: 5px;
+      /* Rounded track */
+    }
+
+    .volume-slider::-ms-fill-upper {
+      background: #555;
+      /* Color for upper track (after thumb) */
+      border-radius: 5px;
+      /* Rounded track */
+    }
+
+    .volume-slider::-webkit-slider-runnable-track {
+      background: linear-gradient(to right, #1db954 0%, #1db954 var(--volume-percent), #555 var(--volume-percent), #555 100%);
+      border-radius: 5px;
+      /* Rounded track */
+    }
+
+    .volume-slider::-moz-range-track {
+      background: linear-gradient(to right, #1db954 0%, #1db954 var(--volume-percent), #555 var(--volume-percent), #555 100%);
+      border-radius: 5px;
+      /* Rounded track */
+    }
+
+    .like-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      justify-content: right;
+      align-items: center;
+    }
+
+    .music-recommend {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #1d1f21;
+      border-radius: 10px;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .recommended_song {
+      max-width: 100%;
+    }
+
+    .recommended_song a {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .recommended_song a:hover {
+      background-color: #6c6767;
+      transform: scale(1.02);
+    }
+  </style>
+</head>
+
+<body style="margin:0; padding:0; font-family:Arial, sans-serif; color:#fff; background-color: #1d1f21;">
+  <!-- Sidebar remains unchanged -->
+  <div class="sidebar">
+
+    <div class="sidebar-section">
+      <!-- Spotify Logo -->
+      <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png" alt="Spotify Logo"
+        style="width: 100%; height: auto; padding: 20px; box-sizing: border-box;">
+
+      <a href="/" class="sidebar-link">
+        <span class="sidebar-link-icon"><i class="fa-solid fa-house"></i></span>
+        Home
+      </a>
+      <a href="/search/" class="sidebar-link">
+        <span class="sidebar-link-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+        Search
+      </a>
+    </div>
+
+    <!-- Bottom section of the sidebar -->
+    <div class="sidebar-section">
+      <a href="#" class="sidebar-link">
+        <span class="sidebar-link-icon"><i class="fa-solid fa-book"></i></span>
+        Your Library
+      </a>
+      <div class="create-playlist">
+        <h4>Create your first playlist</h4>
+        <p>It easy we will help you</p>
+        <button>Create playlist</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <a href="/liked_song/{{user.customuser.id}}" class="sidebar-link">
+        <span class="sidebar-link-icon"><i class="fa-solid fa-heart"></i></span>
+        Liked Songs
+      </a>
+      <a href="/history/{{user.customuser.id}}" class="sidebar-link" style="white-space: nowrap;">
+        <span class="sidebar-link-icon"><i class="fa-solid fa-book"></i></span>
+        Listening History
+      </a>
+    </div>
+  </div>
+
+  <div style="margin-left:240px; padding:10px;">
+    <header class="header-container" style="background-color: #1d1f21;">
+      <div class="head-nav">
+        <form action="{% url 'search' %}" method="POST">
+          {% csrf_token %}
+          <div class="search-bar" style="width: 390px;">
+            <input type="search" name="search_query" placeholder="What do you want to listen to?" aria-label="Search">
+            <button type="submit" aria-label="Search">
+              🔍
+            </button>
+          </div>
+        </form>
+
+        <div class="login-button">
+          {% if user.is_authenticated %}
+          <div class="user-nav" style="position: relative; right: -100px; display: inline-block;">
+            <b style="position: absolute; top: 27px; right: 60px; transform: translateY(-50%); white-space: nowrap;">Welcome,
+              {{user.username}}</b>
+            <img src="{{user.customuser.avatar.url}}" alt="User"
+              style="float: right; width: 50px; height: 50px; border-radius: 50%;" onclick="toggleLogoutBox()">
+            <div id="logout-box"
+              style="display: none; position: absolute; top: 60px; right: 0; background-color: rgb(46, 45, 45); padding: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); border-radius: 10px; width: 150px;">
+              <a href="{% url 'logout' %}"
+                style="text-decoration: none; color: white; font-size: 16px; font-weight: 300; white-space: nowrap; ">Log
+                out</a>
+            </div>
+          </div>
+          {% else %}
+          <a href="signup">
+            <button type="button" class="signup">Sign Up</button>
+          </a>
+          <a href="login">
+            <button type="button" class="login">Login</button>
+          </a>
+          {% endif %}
+        </div>
+
+      </div>
+    </header>
+
+    <div class="music-player"
+      style="padding:10px; display: flex; justify-content: left; align-items: center; background: linear-gradient( #5a7d9f, #3a3d40); width: 110%; overflow-x: hidden;">
+      <!-- Music Player Interface -->
+      <div class="player-container" style="display: flex; align-items: center; height: 100%;">
+        <img class="album-cover" src="{{track_coverArt}}" alt="Album Cover">
+        <div class="song-details" style="display: flex; align-items: flex-start;">
+          <h4 class="song">Song</h4>
+          <h1 class="song-title">{{track_name}}</h1>
+          <div class="artist_href" style="display: flex; justify-content: center; white-space: nowrap;">
+            <a href="/profile/{{track_artist_id}}"
+              style="text-decoration: none; margin-right: 5px; display: flex; justify-content: center; margin-top: 0.5px;">
+              <img src="{{artist_image}}" alt="Artist Avatar"
+                style="width: 30px; height: 30px; border-radius: 50%; margin-right: 5px; margin-top: -5px;">
+              <p style="color: #fff;">{{track_artist}}</p>
+            </a>
+            <script>
+              const totalSeconds = Math.floor("{{track_duration}}" / 1000);
+              const track_duration_mn = Math.floor(totalSeconds / 60);
+              const track_duration_sec = totalSeconds % 60;
+              const formatted_duration = track_duration_mn.toString().padStart(2, '0') + ':' + track_duration_sec.toString().padStart(2, '0');
+              const release_date = new Date("{{track_album_release_date}}").getFullYear();
+              document.write(' | Release Year: ' + release_date);
+              document.write(' | Duration: ' + formatted_duration);
+              document.write(' | Popularity Score: ' + "{{track_popularity}}");
+            </script>
+
+          </div>
+        </div>
+
+        <!--
+>>>>>>> c50ecd3c43ce8fe019d382750977a27f8636e1e3
             <h3 class="artist-name">{{track_artist}}</h3>
                 <div class="player-controls">
                   <button id="prev" class="control-btn">&#9668;</button>
@@ -505,6 +929,7 @@
                 </div>
             -->
 
+<<<<<<< HEAD
           <audio>
             <source
               id="music-player"
@@ -514,8 +939,24 @@
             Your browser does not support the audio element.
           </audio>
         </div>
+=======
+        <audio>
+          <source id="music-player" src="{{track_preview}}" type="audio/mpeg">
+          Your browser does not support the audio element.
+        </audio>
+>>>>>>> c50ecd3c43ce8fe019d382750977a27f8636e1e3
       </div>
+    </div>
+    <div class="footer">
+      <button id="prev" class="control-btn"><i class="fa-solid fa-backward-step"></i></button>
+      <iframe src="https://open.spotify.com/embed/track/{{track_id}}" width="60%" height="80" frameborder="0"
+        allowtransparency="true" allow="encrypted-media">
+      </iframe>
+      <button id="next" class="control-btn"><i class="fa-solid fa-forward-step"></i></button>
+    </div>
+    <div class="player-controls">
 
+<<<<<<< HEAD
       <div class="player-controls">
         <button id="prev" class="control-btn">
           <i class="fa-solid fa-backward-step"></i>
@@ -715,14 +1156,109 @@
       } else {
         logoutBox.style.display = "none";
       }
+=======
+      <button id="prev" class="control-btn"><i class="fa-solid fa-backward-step"></i></button>
+      <iframe src="https://open.spotify.com/embed/track/{{track_id}}" auto-play width="200%" height="80" frameborder="0"
+        allowtransparency="true" allow="encrypted-media"></iframe>
+      <button id="next" class="control-btn"><i class="fa-solid fa-forward-step"></i></button>
+      <div class="progress-container">
+        <div class="progress-bar-background">
+          <div class="progress-bar" id="progress" style="width: 20%;" value="0" min="0" max="100"></div>
+        </div>
+      </div>
+      <div class="volume-container">
+        <div class="volume">
+          <label for="volume-range" class="volume_icon"><i class="fa-solid fa-volume-high"></i></label>
+          <input type="range" id="volume-range" min="0" max="100" value="50" class="volume-slider">
+        </div>
+        <div class="like-btn">
+          <form action="{% url 'liked_song_process' track_id %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="user" value="{{user}}">
+            <input type="hidden" name="track_id" value="{{track_id}}">
+            <input type="hidden" name="track_name" value="{{track_name}}">
+            <input type="hidden" name="track_artist" value="{{track_artist}}">
+            <input type="hidden" name="track_coverArt" value="{{track_coverArt}}">
+            <input type="hidden" name="track_duration" value="{{track_duration}}">
+            <input type="hidden" name="track_popularity" value="{{track_popularity}}">
+            <button type="submit" id="like" name="submit_like" class="control-btn" onclick="onLikeClick()">
+              <i class="fa-solid fa-heart"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="artist-info" style="width: fit-content;">
+      <a href="/profile/{{track_artist_id}}"
+        style="text-decoration: none; display: flex; justify-content: flex-start; margin-left: 20px; margin-top: 70px;">
+        <img src="{{artist_image}}" alt="Artist Avatar"
+          style="width: 80px; height: 80px; border-radius: 50%; margin-right: 5px; margin-top: -5px;">
+        <h4 style="color: #fff; margin-top: 15px; font-weight: 550; font-size: 15px;">Artist <br>{{track_artist}}</h4>
+      </a>
+    </div>
+
+    <div class="music-recommend">
+      <h2>Recommended</h2>
+      <h4 style="font-size: 15px; font-weight: 400; color: #979191;">Based on this song</h4>
+      <div class="recommended_song">
+        {% for song in recommend_songs %}
+        <a href="/music/{{song.track_uri}}"
+          style="text-decoration: none; display: flex; align-content: center; margin-top: 20px;">
+          <img src="{{song.track_coverArt}}" alt="Album Cover"
+            style="width: 50px; height: 50px; border-radius: 5px; margin-right: 10px;">
+          <div class="song-details" style="flex-grow: 1;">
+            <h4 class="song" style="margin: 0; color: #fff;">{{song.track_name}}</h4>
+            <h4 class="song" style="margin: 0; color: #bbb;">{{song.track_artist}}</h4>
+          </div>
+          <h4 class="play-count"
+            style="margin-right: 200px; color: #ccc; min-width: 90px; font-size: 17px; margin-top: 10px; font-weight: 400;">
+            {{ song.track_popularity }}</h4>
+          <h4 class="duration"
+            style="margin-left: 10px; color: #ccc; min-width: 50px; font-size: 17px; margin-top: 10px; font-weight: 400;">
+            {{ song.track_duration }}</h4>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+
+
+</body>
+<script>
+  function toggleLogoutBox() {
+    var logoutBox = document.getElementById('logout-box');
+    if (logoutBox.style.display === 'none' || logoutBox.style.display === '') {
+      logoutBox.style.display = 'block';
+    } else {
+      logoutBox.style.display = 'none';
+>>>>>>> c50ecd3c43ce8fe019d382750977a27f8636e1e3
     }
 
     const volumeSlider = document.getElementById("volume-range");
 
+<<<<<<< HEAD
     // Set initial volume highlight
     function updateVolumeHighlight() {
       const volumePercent = volumeSlider.value;
       volumeSlider.style.setProperty("--volume-percent", `${volumePercent}%`);
+=======
+  // Set initial volume highlight
+  function updateVolumeHighlight() {
+    const volumePercent = volumeSlider.value;
+    console.log(volumePercent)
+    volumeSlider.style.setProperty('--volume-percent', `${volumePercent}%`);
+  }
+
+  function onLikeClick() {
+    const likeButton = document.getElementById('like');
+    const liked = "{{liked}}";
+    if (liked == "True") {
+      likeButton.style.color = '#1db954';
+    } else {
+      likeButton.style.color = 'none';
+>>>>>>> c50ecd3c43ce8fe019d382750977a27f8636e1e3
     }
 
     function onLikeClick() {
@@ -735,6 +1271,7 @@
       }
     }
 
+<<<<<<< HEAD
     function createPlaylist() {
       fetch("/create_playlist", {
         method: "POST",
@@ -757,3 +1294,11 @@
     onLikeClick();
   </script>
 </html>
+=======
+  // Initialize highlight on page load
+  updateVolumeHighlight();
+  onLikeClick();
+</script>
+
+</html>
+>>>>>>> c50ecd3c43ce8fe019d382750977a27f8636e1e3

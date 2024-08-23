@@ -19,26 +19,38 @@ import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
 from datetime import datetime
+from django.http import JsonResponse
+
+def spotify_token_view(request):
+    access_token = getAccessToken()
+    return JsonResponse({'access_token': access_token})
 
 
 def getAccessToken():
-	client_id = 'e6084fff3ac4446abcc6f5835c0b9845'
-	client_secret = '5ab64c21c43442bfa774423eb1bb5b45'
-	auth_string = f'{client_id}:{client_secret}'
-	auth_bytes = auth_string.encode('utf-8')
-	auth_base64 = str(base64.b64encode(auth_bytes), 'utf-8')
+    client_id = 'e6084fff3ac4446abcc6f5835c0b9845'
+    client_secret = '5ab64c21c43442bfa774423eb1bb5b45'
+    auth_string = f'{client_id}:{client_secret}'
+    auth_bytes = auth_string.encode('utf-8')
+    auth_base64 = base64.b64encode(auth_bytes).decode('utf-8')
 
-	url = "https://accounts.spotify.com/api/token"
-	headers = {
-		'Authorization': f'Basic {auth_base64}',
-		'ContentType': 'application/x-www-form-urlencoded'
-	}
+    url = "https://accounts.spotify.com/api/token"
+    headers = {
+        'Authorization': f'Basic {auth_base64}',
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
-	data = { 'grant_type': 'client_credentials' }
-	result = requests.post(url, headers=headers, data=data)
-	json_result = json.loads(result.content)
-	access_token = json_result['access_token']
-	return access_token
+    data = { 'grant_type': 'client_credentials' }
+    try:
+        result = requests.post(url, headers=headers, data=data)
+        result.raise_for_status()  # Raise an exception for HTTP errors
+        json_result = result.json()
+        access_token = json_result.get('access_token')
+        print(json_result)
+        return access_token
+    except requests.RequestException as e:
+        print(f'Error fetching access token: {e}')
+        return None
+
 
 def getAuthHeader():
 	access_token = getAccessToken()

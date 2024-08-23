@@ -9,6 +9,7 @@ urlpatterns = [
 	path('login', views.login, name = 'login'),
 	path('music/<str:pk>', views.music, name = 'music'),
 	path('signup', views.signup, name = 'signup'),
+    path('spotify-token/', views.spotify_token_view, name='spotify-token'),
 	path('logout', views.logout, name = 'logout'),
 	path('changepass', views.change_password, name = 'changepass'),
     # path('product/<slug:url>', views.product),
