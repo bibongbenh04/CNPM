@@ -18,6 +18,7 @@ import json
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import OneHotEncoder
 from datetime import datetime
 from django.http import JsonResponse
 
@@ -142,7 +143,6 @@ def music(request, pk):
 	user = request.user
 	if user.is_authenticated:
 		user = CustomUser.objects.get(user=user)
-		print(user.avatar)
 		if user_playlist.objects.filter(user=user).exists():
 			playlist_content = user_playlist.objects.filter(user=user)
 		else:
@@ -175,6 +175,8 @@ def music(request, pk):
 	response_recommend_song = requests.get(query_url_recommend_song, headers=header)
 	data_recommend_song = response_recommend_song.json()
 
+	print(recommend_songs_list)
+
 	data_recommend_songs = []
 	for song in data_recommend_song["tracks"]:
 		track_name = song["name"]
@@ -199,6 +201,14 @@ def music(request, pk):
 	track_info['recommend_songs'] = data_recommend_songs
 
 	return render(request, 'music.html',track_info)
+
+def get_genre_seed():
+	header = getAuthHeader()
+	url = "https://api.spotify.com/v1/recommendations/available-genre-seeds"
+	response = requests.get(url, headers=header)
+	data = response.json()
+	genre_seed = data['genres']
+	return genre_seed
 
 def history(request, pk):
 	user_id = pk
@@ -231,6 +241,11 @@ def history(request, pk):
 			'track_artist': track_artist,
 			'track_popularity': track_popularity,
 		})
+
+	genre_seed = get_genre_seed()
+	
+	print(genre_seed)
+
 	context = {
 		'data': data,
 		'playlist_content': playlist_content
@@ -354,8 +369,10 @@ def playlist(request, pk):
 			playlist_tracks = None
 		
 		recommend_songs_list = None
+		
 		if playlist_tracks is not None:
-			recommend_songs = hybird_recommend_for_list_of_tracks(playlist_tracks,num_recommendations=5)
+			
+			recommend_songs = hybird_recommendation_using_scaled(playlist.playlist_tracks_ids, num_recommendations=5)
 			query_recommend_songs = ",".join(recommend_songs['track_id'].values)
 			query_url_recommend_songs = url + "?market=VN&ids=" + query_recommend_songs
 			response_recommend_songs = requests.get(query_url_recommend_songs, headers=header)
@@ -401,6 +418,7 @@ def playlist(request, pk):
 			'recommend_songs': recommend_songs_list,
 			'playlist_content': playlist_content
 		}
+
 		return render(request, 'playlist.html', data)
 
 def add_song(request, pk):
@@ -854,6 +872,15 @@ def ScalerDataSet():
 	music_features_scaled = scaler.fit_transform(music_features)
 	return music_features_scaled
 
+def get_Playlist_Avg_Features(playlist_id):
+	playlist = user_playlist.objects.get(playlist_id=playlist_id)
+	playlist_tracks = MusicDataSet.objects.filter(track_id__in=playlist.playlist_tracks_ids)
+	df = pd.DataFrame(list(playlist_tracks.values()))
+	playlist_avg_features = df[['danceability', 'energy', 'key', 'loudness', 'mode', 'speechiness', 'acousticness', 'instrumentalness', 'liveness', 'valence', 'tempo','track_popularity']].mean()
+	scaler = MinMaxScaler()
+	playlist_avg_features_scaled = scaler.fit_transform(playlist_avg_features.values.reshape(1, -1))
+	return playlist_avg_features_scaled
+
 music_features_scaled = ScalerDataSet()
 
 def content_based_recommendations(track_info, num_recommendations=5, df=music_data, music_features_scaled=music_features_scaled):
@@ -888,10 +915,10 @@ def calculate_weighted_popularity(release_date):
 	time_span = datetime.now() - release_date
 
     # Calculate the weighted popularity score based on time span (e.g., more recent releases have higher weight)
-	weight = 1 / (time_span.days + 1)
+	weight = 1 / time_span.days * 10 
 	return weight
 
-def hybird_recommendation(track_info,df=music_data, music_features_scaled = music_features_scaled, num_recommendations=5, alpha=0.5):
+def hybird_recommendation(track_info,df=music_data, music_features_scaled = music_features_scaled, num_recommendations=5):
 	if track_info['track_id'] not in df['track_id'].values:
 		print("Track not in dataset. Adding track to dataset...")
 		AddMusicDataToDB(track_info)
@@ -916,29 +943,57 @@ def hybird_recommendation(track_info,df=music_data, music_features_scaled = musi
 	content_based_recommendations['weighted_popularity'] = content_based_recommendations['track_album_release_date'].apply(calculate_weighted_popularity)
 
 	# Calculate the hybrid scores
-	content_based_recommendations['hybrid_score'] = (alpha * content_based_recommendations['weighted_popularity']) + ((1 - alpha) * content_based_recommendations['track_popularity'])
+	content_based_recommendations['hybrid_score'] = content_based_recommendations['track_popularity'] + content_based_recommendations['track_popularity'] * content_based_recommendations['weighted_popularity']
 
 	# Sort the hybrid scores in descending order
 	hybrid_recommendations = content_based_recommendations.sort_values('hybrid_score', ascending=False)
 
 	return hybrid_recommendations
 
-def hybird_recommend_for_list_of_tracks(list_of_tracks, num_recommendations=5, alpha=0.5, df=music_data, music_features_scaled=music_features_scaled):
-	hybrid_recommendations = []
-	for track_info in list_of_tracks:
-		if track_info['track_id'] not in df['track_id'].values:
-			print("Track not in dataset. Adding track to dataset...")
-			AddMusicDataToDB(track_info)
+def getting_track_from_id(track_id):
+	url = "https://api.spotify.com/v1/tracks"
+	query_url = url + "/" + track_id + "?market=VN"
+
+	header = getAuthHeader()
+	response = requests.get(query_url, headers=header)
+
+	data = response.json()
+
+	track_id = data["id"]
+	track_name = data["name"]
+	track_artist = data["artists"][0]["name"]
+	track_popularity = data["popularity"]
+	track_album_release_date = data["album"]["release_date"]
+
+	track_info = {
+		'track_id': track_id,
+		'track_name': track_name,
+		'track_artist': track_artist,
+		'track_popularity': track_popularity,
+		'track_album_release_date': track_album_release_date
+	}
+
+	return track_info
+	
+
+def hybird_recommendation_using_scaled(track_ids, df=music_data, music_features_scaled=music_features_scaled, num_recommendations=5):
+	for track in track_ids:
+		if track not in df['track_id'].values:
+			AddMusicDataToDB(getting_track_from_id(track))
 			df = LoadDataSet()
 			df.sort_values('track_popularity', ascending=False, inplace=True)
 			df.reset_index(drop=True, inplace=True)
 			music_features_scaled = ScalerDataSet()
-		
-		hybrid_recommendations.append(hybird_recommendation(track_info, df, music_features_scaled, num_recommendations, alpha))
 
-	combined_recommendations = pd.concat(hybrid_recommendations).drop_duplicates(subset='track_id').reset_index(drop=True)
-	combined_recommendations = combined_recommendations.sort_values('hybrid_score', ascending=False).head(num_recommendations)
+	avg_scaled_features = music_features_scaled[df[df['track_id'].isin(track_ids)].index].mean(axis=0)
 
-	finale_recommendations = combined_recommendations[['track_id']]
+	similarity_scores = cosine_similarity([avg_scaled_features], music_features_scaled)
 
-	return finale_recommendations
+	similar_song_indices = similarity_scores.argsort()[0][::-1][1:num_recommendations + 1]
+
+	content_based_recommendations = df.iloc[similar_song_indices][['track_id','track_name', 'track_artist', 'playlist_genre', 'track_album_release_date', 'track_popularity']]
+	content_based_recommendations['weighted_popularity'] = content_based_recommendations['track_album_release_date'].apply(calculate_weighted_popularity)
+	content_based_recommendations['hybrid_score'] = content_based_recommendations['track_popularity'] + content_based_recommendations['track_popularity'] * content_based_recommendations['weighted_popularity']
+	hybrid_recommendations = content_based_recommendations.sort_values('hybrid_score', ascending=False)
+
+	return hybrid_recommendations

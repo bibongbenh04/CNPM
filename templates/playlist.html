@@ -446,9 +446,10 @@
         color: #1db954;
       }
 
-      .track_chosen {
+      .track.highlight {
         background-color: #2a2a2a;
         color: #1db954;
+        border: 1px solid #ccc;
       }
 
       .track_item {
@@ -721,8 +722,11 @@
         Your browser does not support the audio element.
       </audio>
       <div class="player-controls">
+        <button id="prev" class="control-btn">
+          <i class="fa-solid fa-backward-step"></i>
+        </button>
         <iframe
-          src="https://open.spotify.com/embed/track/{{track_id}}"
+          src="https://open.spotify.com/embed/track/{{playlist_tracks.0.track_id}}"
           auto-play
           width="200%"
           height="80"
@@ -730,21 +734,9 @@
           allowtransparency="true"
           allow="encrypted-media"
         ></iframe>
-        <div class="volume-container">
-          <div class="volume">
-            <label for="volume-range" class="volume_icon"
-              ><i class="fa-solid fa-volume-high"></i
-            ></label>
-            <input
-              type="range"
-              id="volume-range"
-              min="0"
-              max="100"
-              value="50"
-              class="volume-slider"
-            />
-          </div>
-        </div>
+        <button id="next" class="control-btn">
+          <i class="fa-solid fa-forward-step"></i>
+        </button>
       </div>
 
       <div class="artist-info" style="width: fit-content">
@@ -770,17 +762,24 @@
               margin-top: -5px;
             "
           />
-          <h4
-            style="
-              color: #fff;
-              margin-top: 15px;
-              font-weight: 550;
-              font-size: 15px;
-            "
+          <div
+            class="current_playing"
+            style="display: flex; flex-direction: column"
           >
-            Current Playing <br />
-            {{playlist_tracks.0.track_name}}
-          </h4>
+            <h4 style="display: block">Currently playing:</h4>
+            <h4
+              style="
+                color: #fff;
+                margin-top: 10px;
+                font-weight: 550;
+                font-size: 15px;
+              "
+              class="artist-name"
+              id="artistName"
+            >
+              {{playlist_tracks.0.track_name}}
+            </h4>
+          </div>
         </div>
       </div>
 
@@ -801,7 +800,10 @@
         {% else %}
         <div class="track_list">
           {% for track in playlist_tracks %}
-          <div class="track">
+          <div
+            class="track"
+            onclick="highlightTrack(this, '{{track.track_id}}')"
+          >
             <div class="track_item">{{track.track_number}}</div>
             <div class="track_item">
               <img
@@ -810,6 +812,9 @@
                 class="playlist_track_cover"
               />
               <span class="playlist_track_title">{{track.track_name}}</span>
+            </div>
+            <div class="track_item" style="display: none" id="track_ID">
+              {{track.track_id}}
             </div>
             <div class="track_item">{{track.track_artist}}</div>
             <div class="track_item">{{track.track_popularity}}</div>
@@ -981,6 +986,28 @@
   </body>
 
   <script>
+    function highlightTrack(selectedTrack, track_id) {
+      // Remove highlight from all tracks
+      const tracks = document.querySelectorAll(".track");
+      tracks.forEach((track) => {
+        track.classList.remove("highlight");
+      });
+
+      const track_image = selectedTrack.querySelector(".playlist_track_cover");
+      const track_title = selectedTrack.querySelector(".playlist_track_title");
+      const this_track_id = track_id;
+
+      document.querySelector(
+        "iframe"
+      ).src = `https://open.spotify.com/embed/track/${this_track_id}`;
+
+      document.getElementById("artistAvatar").src = track_image.src;
+      document.getElementById("artistName").textContent =
+        track_title.textContent;
+
+      selectedTrack.classList.add("highlight");
+    }
+
     function world_resetto() {
       window.location.reload();
     }
@@ -1221,10 +1248,39 @@
         }
       });
     }
-    // Update highlight on input change
-    volumeSlider.addEventListener("input", updateVolumeHighlight);
+    document.getElementById("prev").addEventListener("click", function () {
+      const tracks = document.querySelectorAll(".track");
+      const currentTrack = document.querySelector(".highlight");
+      const currentTrackIndex = Array.from(tracks).indexOf(currentTrack);
+      const prevTrack = tracks[currentTrackIndex - 1];
+      const index = currentTrackIndex - 1;
+      if (index < 0) {
+        return;
+      }
+      const track_id = prevTrack
+        .getElementsByClassName("track_item")[2]
+        .textContent.trim();
+      console.log(track_id);
+      highlightTrack(prevTrack, track_id);
+    });
 
-    // Initialize highlight on page load
-    updateVolumeHighlight();
+    document.getElementById("next").addEventListener("click", function () {
+      const tracks = document.querySelectorAll(".track");
+      const currentTrack = document.querySelector(".highlight");
+      const currentTrackIndex = Array.from(tracks).indexOf(currentTrack);
+      const nextTrack = tracks[currentTrackIndex + 1];
+      const index = currentTrackIndex + 1;
+      if (index >= tracks.length) {
+        return;
+      }
+      const track_id = nextTrack
+        .getElementsByClassName("track_item")[2]
+        .textContent.trim();
+      console.log(track_id);
+      highlightTrack(nextTrack, track_id);
+    });
+
+    const firstTrack = document.querySelector(".track");
+    highlightTrack(firstTrack, "{{ playlist_tracks.0.track_id }}");
   </script>
 </html>
