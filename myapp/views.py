@@ -318,11 +318,11 @@ def create_playlist(request):
 		if request.method == 'POST':
 			if user_playlist.objects.filter(user=user).exists():
 				playlist_name = 'My Playlist # ' + str(user_playlist.objects.filter(user=user).count() + 1)
-				playlist = user_playlist(user=user, playlist_name=playlist_name, playlist_description='My playlist', playlist_image_url='/temp_stuff/playlist_image.jpg', playlist_tracks_ids=[])
+				playlist = user_playlist(user=user, playlist_name=playlist_name, playlist_description='My playlist', playlist_image='/temp_stuff/playlist_image.jpg', playlist_tracks_ids=[])
 				playlist.save()
 			else:
 				playlist_name = 'My Playlist # 1'
-				playlist = user_playlist(user=user, playlist_name=playlist_name, playlist_description='My playlist', playlist_image_url='/temp_stuff/playlist_image.jpg' , playlist_tracks_ids=[])
+				playlist = user_playlist(user=user, playlist_name=playlist_name, playlist_description='My playlist', playlist_image='/temp_stuff/playlist_image.jpg' , playlist_tracks_ids=[])
 				playlist.save()
 		return redirect('playlist', pk=playlist.playlist_id)
 	

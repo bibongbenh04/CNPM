@@ -547,25 +547,47 @@
       </div>
 
       <!-- Bottom section of the sidebar -->
-      <div class="create-playlist">
-        {% if playlist_content != None %}
-        <div class="playlist_content">
-          {% for playlist in playlist_content %}
-          <a href="/playlist/{{playlist.playlist_id}}" class="sidebar-link">
-            <img
-              src="{{playlist.playlist_image.url}}"
-              alt="{{playlist.playlist_name}}"
-            />
-            <h4>{{playlist.playlist_name}}</h4>
+      <div class="sidebar-section">
+        <div class="sidebar-title" style="display: flex; align-items: center">
+          <a href="#" class="sidebar-link">
+            <span class="sidebar-link-icon"
+              ><i class="fa-solid fa-book"></i
+            ></span>
+            Your Library
           </a>
-          {% endfor %}
+          <button
+            class="sidebar-link"
+            onclick="createPlaylist()"
+            style="
+              background-color: transparent;
+              border: none;
+              margin-top: 10px;
+            "
+          >
+            <i class="fa-solid fa-plus"></i>
+          </button>
         </div>
 
-        {% else %}
-        <h4>Create your first playlist</h4>
-        <p>It easy we will help you</p>
-        <button onclick="createPlaylist()">Create playlist</button>
-        {% endif %}
+        <div class="create-playlist">
+          {% if playlist_content != None %}
+          <div class="playlist_content">
+            {% for playlist in playlist_content %}
+            <a href="/playlist/{{playlist.playlist_id}}" class="sidebar-link">
+              <img
+                src="{{playlist.playlist_image.url}}"
+                alt="{{playlist.playlist_name}}"
+              />
+              <h4>{{playlist.playlist_name}}</h4>
+            </a>
+            {% endfor %}
+          </div>
+
+          {% else %}
+          <h4>Create your first playlist</h4>
+          <p>It easy we will help you</p>
+          <button onclick="createPlaylist()">Create playlist</button>
+          {% endif %}
+        </div>
       </div>
 
       <div class="sidebar-section">
@@ -721,6 +743,7 @@
         <source id="music-player" src="{{track_preview}}" type="audio/mpeg" />
         Your browser does not support the audio element.
       </audio>
+      {% if playlist_tracks != None %}
       <div class="player-controls">
         <button id="prev" class="control-btn">
           <i class="fa-solid fa-backward-step"></i>
@@ -734,6 +757,7 @@
           allowtransparency="true"
           allow="encrypted-media"
         ></iframe>
+
         <button id="next" class="control-btn">
           <i class="fa-solid fa-forward-step"></i>
         </button>
@@ -782,6 +806,7 @@
           </div>
         </div>
       </div>
+      {% endif %}
 
       <div class="playlist_container">
         <div class="playlist_header">
