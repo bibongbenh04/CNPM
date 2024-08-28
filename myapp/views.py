@@ -175,8 +175,6 @@ def music(request, pk):
 	response_recommend_song = requests.get(query_url_recommend_song, headers=header)
 	data_recommend_song = response_recommend_song.json()
 
-	print(recommend_songs_list)
-
 	data_recommend_songs = []
 	for song in data_recommend_song["tracks"]:
 		track_name = song["name"]
@@ -241,10 +239,6 @@ def history(request, pk):
 			'track_artist': track_artist,
 			'track_popularity': track_popularity,
 		})
-
-	genre_seed = get_genre_seed()
-	
-	print(genre_seed)
 
 	context = {
 		'data': data,

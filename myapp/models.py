@@ -47,7 +47,7 @@ class MusicDataSet(models.Model):
 
 class UserLikedSongs(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    track_id = models.CharField(max_length=255, unique=True)
+    track_id = models.CharField(max_length=255)
     track_name = models.CharField(max_length=255)
     track_artist = models.CharField(max_length=255)
     track_popularity = models.IntegerField(default=0)
@@ -63,7 +63,7 @@ class UserLikedSongs(models.Model):
     
 class UserHistory(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    track_id = models.CharField(max_length=255, unique=True)
+    track_id = models.CharField(max_length=255)
     track_name = models.CharField(max_length=255)
     track_artist = models.CharField(max_length=255)
     track_popularity = models.IntegerField(default=0)
