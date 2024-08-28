@@ -1,8 +1,3 @@
-# WebMamXanh<div align="center">
-<img width="30%" src="https://image.phunuonline.com.vn/news/2018/20180501/fckimage/126828_32a-271110234.jpg">
-
-<a href="https://bibongbenh.pythonanywhere.com/"> Link Preview </a>
-
 # CNPM
 </div>
 
