@@ -26,6 +26,7 @@ SECRET_KEY = 'django-insecure-^m=4)jz@+4kqfy8mryo)s*a%)i60p1j1tu*(jd66rm9_#q9o05
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 CACHES = {'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache', 'LOCATION': ''}}
+CSRF_TRUSTED_ORIGINS = ['https://spotify-hihi-a4beh9d2gpbud7hr.southeastasia-01.azurewebsites.net']
 
 from django.utils.translation import gettext_lazy as _
 LANGUAGE = [
