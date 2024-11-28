@@ -822,7 +822,9 @@ def AddMusicDataToDB(track_info):
 
 	data = response.json()
 
-	danceability = data["danceability"]
+	danceability = 0.5
+	if "danceability" in data and data["danceability"] is not None:
+	    danceability = data["danceability"]
 	energy = data["energy"]
 	key = data["key"]
 	loudness = data["loudness"]
