@@ -813,52 +813,66 @@ def FormatDated(date_str):
         return None
 
 def AddMusicDataToDB(track_info):
-	header = getAuthHeader()
+    header = getAuthHeader()
 
-	url = "https://api.spotify.com/v1/audio-features"
-	query_url = url + "/" + track_info['track_id']
+    url = "https://api.spotify.com/v1/audio-features"
+    query_url = url + "/" + track_info['track_id']
 
-	response = requests.get(query_url, headers=header)
+    try:
+        response = requests.get(query_url, headers=header)
+        response.raise_for_status()  # Kiểm tra lỗi HTTP
+        data = response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data from Spotify API: {e}")
+        return  # Dừng hàm nếu có lỗi API
+    except ValueError:
+        print("Error decoding JSON response")
+        return
 
-	data = response.json()
+    # Gán giá trị mặc định cho tất cả các thuộc tính
+    danceability = data.get("danceability", 0.5)
+    energy = data.get("energy", 0.0)
+    key = data.get("key", 0)
+    loudness = data.get("loudness", -60.0)  # Giá trị mặc định nhỏ nhất
+    mode = data.get("mode", 0)
+    speechiness = data.get("speechiness", 0.0)
+    acousticness = data.get("acousticness", 0.0)
+    instrumentalness = data.get("instrumentalness", 0.0)
+    liveness = data.get("liveness", 0.0)
+    valence = data.get("valence", 0.0)
+    tempo = data.get("tempo", 120.0)  # Giá trị mặc định thường dùng
 
-	danceability = 0.5
-	if "danceability" in data and data["danceability"] is not None:
-	    danceability = data["danceability"]
-	energy = data["energy"]
-	key = data["key"]
-	loudness = data["loudness"]
-	mode = data["mode"]
-	speechiness = data["speechiness"]
-	acousticness = data["acousticness"]
-	instrumentalness = data["instrumentalness"]
-	liveness = data["liveness"]
-	valence = data["valence"]
-	tempo = data["tempo"]
+    try:
+        # Tạo hoặc lấy bản ghi trong cơ sở dữ liệu
+        track_metadata, created = MusicDataSet.objects.get_or_create(
+            track_id=track_info['track_id'],
+            defaults={
+                "track_name": track_info['track_name'],
+                "track_artist": track_info['track_artist'],
+                "track_popularity": track_info['track_popularity'],
+                "track_album_release_date": FormatDated(track_info['track_album_release_date']),
+                "playlist_genre": 6,  # Giá trị tạm thời
+                "danceability": danceability,
+                "energy": energy,
+                "key": key,
+                "loudness": loudness,
+                "mode": mode,
+                "speechiness": speechiness,
+                "acousticness": acousticness,
+                "instrumentalness": instrumentalness,
+                "liveness": liveness,
+                "valence": valence,
+                "tempo": tempo,
+            },
+        )
 
-	track_metadata = MusicDataSet.objects.get_or_create(
-		track_id=track_info['track_id'],
-		track_name=track_info['track_name'],
-		track_artist=track_info['track_artist'],
-		track_popularity=track_info['track_popularity'],
-		track_album_release_date=FormatDated(track_info['track_album_release_date']),
-		playlist_genre=6, #This data is temporary not available
-		danceability=danceability,
-		energy=energy,
-		key=key,
-		loudness=loudness,
-		mode=mode,
-		speechiness=speechiness,
-		acousticness=acousticness,
-		instrumentalness=instrumentalness,
-		liveness=liveness,
-		valence=valence,
-		tempo=tempo
-	)
+        # Nếu bản ghi chưa tồn tại, lưu mới
+        if created:
+            track_metadata.save()
 
-	if not MusicDataSet.objects.filter(track_id=track_info['track_id']).exists():
-		track_metadata.save()
-
+    except Exception as e:
+        print(f"Error saving data to database: {e}")
+	    
 music_data = LoadDataSet()
 def ScalerDataSet():
 	scaler = MinMaxScaler()
