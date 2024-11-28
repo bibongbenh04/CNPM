@@ -928,37 +928,45 @@ def calculate_weighted_popularity(release_date):
 	weight = 1 / time_span.days * 10 
 	return weight
 
-def hybird_recommendation(track_info,df=music_data, music_features_scaled = music_features_scaled, num_recommendations=5):
-	if track_info['track_id'] not in df['track_id'].values:
-		print("Track not in dataset. Adding track to dataset...")
-		AddMusicDataToDB(track_info)
-		df = LoadDataSet()
-		df.sort_values('track_popularity', ascending=False, inplace=True)
-		df.reset_index(drop=True, inplace=True)
-		music_features_scaled = ScalerDataSet()	
+def hybird_recommendation(track_info, df=music_data, music_features_scaled=music_features_scaled, num_recommendations=5):
+    if track_info['track_id'] not in df['track_id'].values:
+        print("Track not in dataset. Adding track to dataset...")
+        AddMusicDataToDB(track_info)
+        df = LoadDataSet()
+        df.sort_values('track_popularity', ascending=False, inplace=True)
+        df.reset_index(drop=True, inplace=True)
+        music_features_scaled = ScalerDataSet()
 
-	# Get the index of the input song in the music DataFrame
-	input_song_index = df[df['track_id'] == track_info['track_id']].index[0]
+    # Check if the song exists in the updated DataFrame
+    matching_songs = df[df['track_id'] == track_info['track_id']]
+    if matching_songs.empty:
+        raise ValueError(f"Track ID {track_info['track_id']} not found in the dataset after updating.")
 
-	# Calculate the similarity scores based on music features (cosine similarity)
-	similarity_scores = cosine_similarity([music_features_scaled[input_song_index]], music_features_scaled)
+    # Get the index of the input song
+    input_song_index = matching_songs.index[0]
 
-	# Get the indices of the most similar songs
-	similar_song_indices = similarity_scores.argsort()[0][::-1][1:num_recommendations + 1]
+    # Calculate similarity scores
+    similarity_scores = cosine_similarity([music_features_scaled[input_song_index]], music_features_scaled)
 
-	# Get the names of the most similar songs based on content-based filtering
-	content_based_recommendations = df.iloc[similar_song_indices][['track_id','track_name', 'track_artist', 'playlist_genre', 'track_album_release_date', 'track_popularity']]
+    # Get indices of the most similar songs
+    similar_song_indices = similarity_scores.argsort()[0][::-1][1:num_recommendations + 1]
 
-	# Calculate the weighted popularity scores for the most similar songs
-	content_based_recommendations['weighted_popularity'] = content_based_recommendations['track_album_release_date'].apply(calculate_weighted_popularity)
+    # Get song recommendations
+    content_based_recommendations = df.iloc[similar_song_indices][
+        ['track_id', 'track_name', 'track_artist', 'playlist_genre', 'track_album_release_date', 'track_popularity']]
 
-	# Calculate the hybrid scores
-	content_based_recommendations['hybrid_score'] = content_based_recommendations['track_popularity'] + content_based_recommendations['track_popularity'] * content_based_recommendations['weighted_popularity']
+    # Calculate hybrid scores
+    content_based_recommendations['weighted_popularity'] = content_based_recommendations['track_album_release_date'].apply(
+        calculate_weighted_popularity)
+    content_based_recommendations['hybrid_score'] = (
+        content_based_recommendations['track_popularity'] +
+        content_based_recommendations['track_popularity'] * content_based_recommendations['weighted_popularity']
+    )
 
-	# Sort the hybrid scores in descending order
-	hybrid_recommendations = content_based_recommendations.sort_values('hybrid_score', ascending=False)
+    # Sort recommendations by hybrid score
+    hybrid_recommendations = content_based_recommendations.sort_values('hybrid_score', ascending=False)
 
-	return hybrid_recommendations
+    return hybrid_recommendations
 
 def getting_track_from_id(track_id):
 	url = "https://api.spotify.com/v1/tracks"
@@ -987,23 +995,50 @@ def getting_track_from_id(track_id):
 	
 
 def hybird_recommendation_using_scaled(track_ids, df=music_data, music_features_scaled=music_features_scaled, num_recommendations=5):
-	for track in track_ids:
-		if track not in df['track_id'].values:
-			AddMusicDataToDB(getting_track_from_id(track))
-			df = LoadDataSet()
-			df.sort_values('track_popularity', ascending=False, inplace=True)
-			df.reset_index(drop=True, inplace=True)
-			music_features_scaled = ScalerDataSet()
+    # Ensure all tracks in track_ids exist in the dataset
+    for track in track_ids:
+        if track not in df['track_id'].values:
+            print(f"Track {track} not found in dataset. Adding...")
+            track_info = getting_track_from_id(track)
+            if not track_info:
+                raise ValueError(f"Track ID {track} could not be retrieved. Check the source.")
+            AddMusicDataToDB(track_info)
+            df = LoadDataSet()
+            df.sort_values('track_popularity', ascending=False, inplace=True)
+            df.reset_index(drop=True, inplace=True)
+            music_features_scaled = ScalerDataSet()
 
-	avg_scaled_features = music_features_scaled[df[df['track_id'].isin(track_ids)].index].mean(axis=0)
+    # Get indices of the provided track IDs in the dataset
+    matching_indices = df[df['track_id'].isin(track_ids)].index
 
-	similarity_scores = cosine_similarity([avg_scaled_features], music_features_scaled)
+    # Handle case where none of the provided track IDs are found
+    if matching_indices.empty:
+        raise ValueError("None of the provided track IDs are found in the dataset.")
 
-	similar_song_indices = similarity_scores.argsort()[0][::-1][1:num_recommendations + 1]
+    # Compute the average scaled features for the given tracks
+    avg_scaled_features = music_features_scaled[matching_indices].mean(axis=0)
 
-	content_based_recommendations = df.iloc[similar_song_indices][['track_id','track_name', 'track_artist', 'playlist_genre', 'track_album_release_date', 'track_popularity']]
-	content_based_recommendations['weighted_popularity'] = content_based_recommendations['track_album_release_date'].apply(calculate_weighted_popularity)
-	content_based_recommendations['hybrid_score'] = content_based_recommendations['track_popularity'] + content_based_recommendations['track_popularity'] * content_based_recommendations['weighted_popularity']
-	hybrid_recommendations = content_based_recommendations.sort_values('hybrid_score', ascending=False)
+    # Calculate similarity scores
+    similarity_scores = cosine_similarity([avg_scaled_features], music_features_scaled)
 
-	return hybrid_recommendations
+    # Get indices of the most similar songs
+    similar_song_indices = similarity_scores.argsort()[0][::-1][1:num_recommendations + 1]
+
+    # Get details of recommended songs
+    content_based_recommendations = df.iloc[similar_song_indices][
+        ['track_id', 'track_name', 'track_artist', 'playlist_genre', 'track_album_release_date', 'track_popularity']
+    ]
+
+    # Calculate weighted popularity and hybrid scores
+    content_based_recommendations['weighted_popularity'] = content_based_recommendations['track_album_release_date'].apply(
+        calculate_weighted_popularity)
+    content_based_recommendations['hybrid_score'] = (
+        content_based_recommendations['track_popularity'] +
+        content_based_recommendations['track_popularity'] * content_based_recommendations['weighted_popularity']
+    )
+
+    # Sort recommendations by hybrid score
+    hybrid_recommendations = content_based_recommendations.sort_values('hybrid_score', ascending=False)
+
+    return hybrid_recommendations
+
