@@ -38,7 +38,7 @@ LOCALE_PATH = [
     BASE_DIR / 'locale/',
 ]
 
-ALLOWED_HOSTS = ['aria0081.pythonanywhere.com', '127.0.0.1', 'spotify-hihi-a4beh9d2gpbud7hr.southeastasia-01.azurewebsites.net']
+ALLOWED_HOSTS = ['aria0081.pythonanywhere.com', '127.0.0.1', 'spotify-hihi-a4beh9d2gpbud7hr.southeastasia-01.azurewebsites.net', 'spotify-fvcybba2b0cjb6bz.eastasia-01.azurewebsites.net']
 # Application definition
 
 INSTALLED_APPS = [
