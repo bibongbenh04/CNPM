@@ -112,93 +112,93 @@ def top_artists():
 	return data
 
 def music(request, pk):
-	track_id = pk
-	header = getAuthHeader()
+    track_id = pk
+    header = getAuthHeader()
 
-	url = "https://api.spotify.com/v1/tracks"
-	query_url = url + "/" + track_id + "?market=VN"
+    url = "https://api.spotify.com/v1/tracks"
+    query_url = f"{url}/{track_id}?market=VN"
 
-	response = requests.get(query_url, headers=header)
+    response = requests.get(query_url, headers=header)
+    data = response.json()
 
-	data = response.json()
+    track_name = data["name"]
+    track_coverArt = data["album"]["images"][0]["url"] if len(data["album"]["images"]) > 0 else None
+    track_duration = data["duration_ms"]
+    track_uri = data["uri"]
+    track_artist = data["artists"][0]["name"]
+    track_popularity = data["popularity"]
+    track_release_date = data["album"]["release_date"]
+    track_artist_id = data["artists"][0]["id"]
 
-	track_name = data["name"]
-	track_coverArt = data["album"]["images"][0]["url"] if len(data["album"]["images"]) > 0 else None
-	track_duration = data["duration_ms"]
-	track_uri = data["uri"]
-	track_artist = data["artists"][0]["name"]
-	#track_preview = data["preview_url"] if "preview_url" in data else None
-	track_popularity = data["popularity"]
-	track_release_date = data["album"]["release_date"]
-	track_artist_id = data["artists"][0]["id"]
+    user = request.user
+    liked = False
+    if user.is_authenticated:
+        user_obj = CustomUser.objects.get(user=user)
+        liked = UserLikedSongs.objects.filter(user=user_obj, track_id=track_id).exists()
+        SaveUserHistory(user_obj, track_id, track_name, track_artist, track_popularity, track_duration, track_coverArt)
 
-	user = request.user
-	if user.is_authenticated:
-		user = CustomUser.objects.get(user=user)
-		liked = UserLikedSongs.objects.filter(user=user, track_id=track_id).exists()
-		SaveUserHistory(user, track_id, track_name, track_artist, track_popularity, track_duration, track_coverArt)
+    playlist_content = (
+        user_playlist.objects.filter(user=user_obj) if user.is_authenticated and user_playlist.objects.filter(user=user_obj).exists() else None
+    )
 
-	playlist_content = []
+    # Fetch artist data
+    url_artist = f"https://api.spotify.com/v1/artists/{track_artist_id}"
+    response_artist = requests.get(url_artist, headers=header)
+    data_artist = response_artist.json()
+    artist_image = data_artist.get("images", [{}])[0].get("url", None)
 
-	user = request.user
-	if user.is_authenticated:
-		user = CustomUser.objects.get(user=user)
-		if user_playlist.objects.filter(user=user).exists():
-			playlist_content = user_playlist.objects.filter(user=user)
-		else:
-			playlist_content = None
+    track_info = {
+        'track_id': track_id,
+        'track_name': track_name,
+        'track_coverArt': track_coverArt,
+        'track_duration': track_duration,
+        'track_uri': track_uri[14:],
+        'track_artist': track_artist,
+        'track_artist_id': track_artist_id,
+        'track_popularity': track_popularity,
+        'track_album_release_date': track_release_date,
+        'artist_image': artist_image,
+        'liked': liked,
+        'playlist_content': playlist_content
+    }
 
-	url_artist = "https://api.spotify.com/v1/artists"
-	querystring_artist = url_artist+"/"+track_artist_id
-	response_artist = requests.get(querystring_artist, headers=header)
-	data_artist = response_artist.json()
-	artist_image = data_artist["images"][0]["url"] if len(data_artist["images"]) > 0 else None
+    # Fetch recommended songs
+    recommend_songs_list = hybird_recommendation(track_info, num_recommendations=5)
+    query_url_recommend_song = f"{url}?ids={','.join(recommend_songs_list['track_id'].values)}&market=VN"
+    response_recommend_song = requests.get(query_url_recommend_song, headers=header)
 
-	track_info = {
-		'track_id': track_id,
-		'track_name': track_name,
-		'track_coverArt': track_coverArt,
-		'track_duration': track_duration,
-		'track_uri': track_uri[14:],
-		'track_artist': track_artist,
-		'track_artist_id': track_artist_id,
-		#'track_preview': track_preview
-		'track_popularity': track_popularity,
-		'track_album_release_date': track_release_date,
-		'artist_image': artist_image,
-		'liked': liked,
-		'playlist_content': playlist_content
-	}
+    if response_recommend_song.status_code != 200:
+        print(f"Error fetching recommended songs: {response_recommend_song.status_code}")
+        data_recommend_song = {"tracks": []}
+    else:
+        data_recommend_song = response_recommend_song.json()
 
-	recommend_songs_list = hybird_recommendation(track_info,num_recommendations=5)
-	query_url_recommend_song = url + "?ids=" + ",".join(recommend_songs_list['track_id'].values) + "&market=VN"
-	response_recommend_song = requests.get(query_url_recommend_song, headers=header)
-	data_recommend_song = response_recommend_song.json()
+    # Parse recommended songs
+    data_recommend_songs = []
+    for song in data_recommend_song.get("tracks", []):  # Default to empty list if "tracks" not found
+        track_name = song["name"]
+        track_coverArt = song["album"]["images"][0]["url"] if len(song["album"]["images"]) > 0 else None
+        track_duration = song["duration_ms"]
+        track_duration_mn = f"{int(track_duration) // 60000:02}:{math.ceil((float(track_duration) % 60000) / 1000):02}"
+        track_uri = song["uri"]
+        track_popularity = song["popularity"]
+        track_artist = song["artists"][0]["name"]
 
-	data_recommend_songs = []
-	for song in data_recommend_song["tracks"]:
-		track_name = song["name"]
-		track_coverArt = song["album"]["images"][0]["url"] if len(song["album"]["images"]) > 0 else None
-		track_duration = song["duration_ms"]
-		track_duration_mn = f"{int(track_duration)//60000:02}" + ":" + f"{math.ceil((float(track_duration)%60000)/1000):02}"
-		track_uri = song["uri"]
-		track_popularity = song["popularity"]
-		track_artist = song["artists"][0]["name"]
+        recommend_track_info = {
+            'track_name': track_name,
+            'track_coverArt': track_coverArt,
+            'track_duration': track_duration_mn,
+            'track_uri': track_uri[14:],
+            'track_popularity': track_popularity,
+            'track_artist': track_artist
+        }
 
-		recommend_track_info = {
-			'track_name': track_name,
-			'track_coverArt': track_coverArt,
-			'track_duration': track_duration_mn,
-			'track_uri': track_uri[14:],
-			'track_popularity': track_popularity,
-			'track_artist': track_artist
-		}
+        data_recommend_songs.append(recommend_track_info)
 
-		data_recommend_songs.append(recommend_track_info)
+    # Update track info with recommendations
+    track_info['recommend_songs'] = data_recommend_songs
 
-	track_info['recommend_songs'] = data_recommend_songs
-
-	return render(request, 'music.html',track_info)
+    return render(request, 'music.html', track_info)
 
 def get_genre_seed():
 	header = getAuthHeader()
