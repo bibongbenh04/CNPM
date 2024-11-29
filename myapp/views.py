@@ -998,14 +998,15 @@ def getting_track_from_id(track_id):
 	return track_info
 	
 
-def hybird_recommendation_using_scaled(track_ids, df=music_data, music_features_scaled=music_features_scaled, num_recommendations=5):
+def hybrid_recommendation_using_scaled(track_ids, df=music_data, music_features_scaled=music_features_scaled, num_recommendations=5):
     # Ensure all tracks in track_ids exist in the dataset
     for track in track_ids:
         if track not in df['track_id'].values:
             print(f"Track {track} not found in dataset. Adding...")
             track_info = getting_track_from_id(track)
             if not track_info:
-                raise ValueError(f"Track ID {track} could not be retrieved. Check the source.")
+                print(f"Track ID {track} could not be retrieved. Skipping this track.")
+                continue
             AddMusicDataToDB(track_info)
             df = LoadDataSet()
             df.sort_values('track_popularity', ascending=False, inplace=True)
@@ -1017,7 +1018,10 @@ def hybird_recommendation_using_scaled(track_ids, df=music_data, music_features_
 
     # Handle case where none of the provided track IDs are found
     if matching_indices.empty:
-        raise ValueError("None of the provided track IDs are found in the dataset.")
+        print("None of the provided track IDs are found in the dataset. Returning empty recommendations.")
+        return pd.DataFrame(columns=['track_id', 'track_name', 'track_artist', 'playlist_genre', 
+                                     'track_album_release_date', 'track_popularity', 
+                                     'weighted_popularity', 'hybrid_score'])
 
     # Compute the average scaled features for the given tracks
     avg_scaled_features = music_features_scaled[matching_indices].mean(axis=0)
@@ -1045,4 +1049,3 @@ def hybird_recommendation_using_scaled(track_ids, df=music_data, music_features_
     hybrid_recommendations = content_based_recommendations.sort_values('hybrid_score', ascending=False)
 
     return hybrid_recommendations
-
