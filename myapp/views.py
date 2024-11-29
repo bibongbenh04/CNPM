@@ -928,7 +928,7 @@ def calculate_weighted_popularity(release_date):
 	weight = 1 / time_span.days * 10 
 	return weight
 
-def hybrid_recommendation(track_info, df=music_data, music_features_scaled=music_features_scaled, num_recommendations=5):
+def hybird_recommendation(track_info, df=music_data, music_features_scaled=music_features_scaled, num_recommendations=5):
     if track_info['track_id'] not in df['track_id'].values:
         print("Track not in dataset. Adding track to dataset...")
         AddMusicDataToDB(track_info)
