@@ -928,7 +928,7 @@ def calculate_weighted_popularity(release_date):
 	weight = 1 / time_span.days * 10 
 	return weight
 
-def hybird_recommendation(track_info, df=music_data, music_features_scaled=music_features_scaled, num_recommendations=5):
+def hybrid_recommendation(track_info, df=music_data, music_features_scaled=music_features_scaled, num_recommendations=5):
     if track_info['track_id'] not in df['track_id'].values:
         print("Track not in dataset. Adding track to dataset...")
         AddMusicDataToDB(track_info)
@@ -940,7 +940,10 @@ def hybird_recommendation(track_info, df=music_data, music_features_scaled=music
     # Check if the song exists in the updated DataFrame
     matching_songs = df[df['track_id'] == track_info['track_id']]
     if matching_songs.empty:
-        raise ValueError(f"Track ID {track_info['track_id']} not found in the dataset after updating.")
+        print(f"Track ID {track_info['track_id']} not found in the dataset after updating. Returning empty recommendations.")
+        return pd.DataFrame(columns=['track_id', 'track_name', 'track_artist', 'playlist_genre', 
+                                     'track_album_release_date', 'track_popularity', 
+                                     'weighted_popularity', 'hybrid_score'])
 
     # Get the index of the input song
     input_song_index = matching_songs.index[0]
@@ -967,6 +970,7 @@ def hybird_recommendation(track_info, df=music_data, music_features_scaled=music
     hybrid_recommendations = content_based_recommendations.sort_values('hybrid_score', ascending=False)
 
     return hybrid_recommendations
+
 
 def getting_track_from_id(track_id):
 	url = "https://api.spotify.com/v1/tracks"
