@@ -172,3 +172,5 @@ CLOUDINARY_STORAGE = {
 }
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+WSGI_APPLICATION = 'myproject.wsgi.application'
+
