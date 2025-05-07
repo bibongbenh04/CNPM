@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-^m=4)jz@+4kqfy8mryo)s*a%)i60p1j1tu*(jd66rm9_#q9o05
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 CACHES = {'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache', 'LOCATION': ''}}
-CSRF_TRUSTED_ORIGINS = ['https://sfotipy-bua9bcenahh7fpbe.uksouth-01.azurewebsites.net','https://cnpm-production-739b.up.railway.app','https://spotifynahitjustifyxd.up.railway.app/']
+CSRF_TRUSTED_ORIGINS = ['https://sfotipy-bua9bcenahh7fpbe.uksouth-01.azurewebsites.net','https://cnpm-production-739b.up.railway.app','https://spotifynahitjustifyxd.up.railway.app']
 
 from django.utils.translation import gettext_lazy as _
 LANGUAGE = [
@@ -38,7 +38,7 @@ LOCALE_PATH = [
     BASE_DIR / 'locale/',
 ]
 
-ALLOWED_HOSTS = ['aria0081.pythonanywhere.com', '127.0.0.1','spotifynahitjustifyxd.up.railway.app', 'cnpm-production-739b.up.railway.app','spotify-hihi-a4beh9d2gpbud7hr.southeastasia-01.azurewebsites.net', 'sfotipy-bua9bcenahh7fpbe.uksouth-01.azurewebsites.net']
+ALLOWED_HOSTS = ['https://spotifynahitjustifyxd.up.railway.app','aria0081.pythonanywhere.com', '127.0.0.1','spotifynahitjustifyxd.up.railway.app', 'cnpm-production-739b.up.railway.app','spotify-hihi-a4beh9d2gpbud7hr.southeastasia-01.azurewebsites.net', 'sfotipy-bua9bcenahh7fpbe.uksouth-01.azurewebsites.net']
 # Application definition
 
 INSTALLED_APPS = [
